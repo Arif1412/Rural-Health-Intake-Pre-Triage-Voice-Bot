@@ -1,26 +1,36 @@
-# Rural Health Intake & Pre-Triage Voice Bot 🏥🎙️
+<div align="center">
 
-An end-to-end sovereign voice AI application built using **Gnani AI's Artha Stack** for rural healthcare triage and patient intake. Designed for hackathons and internship challenges, this system transcribes spoken Indic symptoms, evaluates clinical urgency, provides structured medical advice, and speaks back in natural regional language.
+# 🏥🎙️ Rural Health Intake & Pre-Triage Voice Bot
+### *Empowering Rural Healthcare Through Sovereign Conversational AI*
+
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![Gnani AI Artha Stack](https://img.shields.io/badge/Powered%20by-Gnani%20AI-orange.svg)](https://gnani.ai/)
+[![Google Colab](https://img.shields.io/badge/Environment-Google%20Colab-yellow.svg)](https://colab.research.google.com/)
+[![Hackathon Submission](https://img.shields.io/badge/Status-Submission%20Ready-success.svg)]()
+
+*An end-to-end voice AI pipeline that bridges the literacy gap by allowing rural patients to speak symptoms in their native tongue, receive instant clinical triage, and hear actionable medical advice back in regional voice.*
+
+</div>
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## 🌟 Key Highlights & Features
 
-The application integrates three core pillars of conversational AI:
-1. **Speech-to-Text (STT):** Gnani AI **Prisma v2.5** (`/stt/v3`) for accurate transcription of regional Indic languages (Hindi/Hinglish).
-2. **Clinical Triage Logic Engine:** Rule-based medical parser that evaluates symptom severity (**RED**, **YELLOW**, **GREEN**) and outputs actionable next steps.
-3. **Text-to-Speech (TTS):** Gnani AI **Timbre v2.5** (`/api/v1/tts/inference`) for warm, natural localized voice generation.
+*   🗣️ **Native Indic Voice Intake:** Translates spoken Hindi/Hinglish patient audio into structured data without requiring text literacy.
+*   ⚡ **Lightning-Fast STT:** Powered by **Gnani AI Prisma v2.5** (`/stt/v3`) for high-accuracy regional transcription[cite: 2].
+*   🏥 **Smart Triage Engine:** Automatically categorizes urgency into **RED (Emergency)**, **YELLOW (Moderate)**, and **GREEN (Mild)** with customized next steps.
+*   🔊 **Natural Voice Synthesis:** Responds to patients using **Gnani AI Timbre v2.5** (`/api/v1/tts/inference`) for warm, localized audio guidance[cite: 2].
 
 ---
 
-## 🔄 Workflow Pipeline
-[Patient Voice Audio (.wav/.mp3)]
-│
-▼  (Prisma v2.5 STT)
-[Transcribed Text in Devanagari]
-│
-▼  (Triage & Clinical Engine)
-[Severity Assessment & Actionable Advice]
-│
-▼  (Timbre v2.5 TTS)
-[Spoken Regional Audio Output & Playback]
+## 🏗️ Architecture & Pipeline Flow
+
+```text
+ ┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
+ │ Patient Audio (.wav)   │ ───> │ Prisma v2.5 (STT)      │ ───> │ Triage Logic Engine    │
+ └────────────────────────┘      └────────────────────────┘      └────────────────────────┘
+                                                                              │
+                                                                              ▼
+ ┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
+ │ Audio Playback in Colab│ <─── │ Timbre v2.5 (TTS)      │ <─── │ Symptom & Solutions    │
+ └────────────────────────┘      └────────────────────────┘      └────────────────────────┘
