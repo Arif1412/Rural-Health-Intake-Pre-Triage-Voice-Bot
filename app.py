@@ -149,7 +149,7 @@ async def serve_frontend():
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers (ASHA/ANM) in rural India to capture patient speech in sovereign vernacular dialects, process clinical pre-triage assessment, and return instant spoken guidance.
+                            AarogyaVoice empowers community health workers (ASHA/ANM) in rural India to capture patient speech in sovereign vernacular dialects, process clinical pre-triage assessment and return instant spoken guidance.
                         </p>
                     </div>
 
@@ -237,7 +237,7 @@ async def serve_frontend():
                 <div id="fileInfo" class="hidden bg-neutral-950 border border-neutral-800 rounded-xl p-4 mb-6 text-emerald-400 font-mono-code text-xs text-center"></div>
 
                 <button onclick="analyzeAudio()" class="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-6 rounded-xl transition duration-200 text-sm flex items-center justify-center space-x-2">
-                    <span>Execute Pre-Triage Pipeline</span>
+                    <span>Analyze</span>
                 </button>
 
                 <!-- Loading Spinner -->
@@ -287,12 +287,12 @@ async def serve_frontend():
                     <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
                         <span class="text-neutral-500 text-[10px]">01 / STT PIPELINE</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Prisma v2.5</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from Indian languages into accurate text with native numeral normalization (<code class="text-amber-400">itn_native_numerals</code>).</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from Indian languages into accurate text with native numeral normalization.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
                         <span class="text-neutral-500 text-[10px]">02 / CLINICAL LOGIC</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Pre-Triage Engine</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms severely based on body organ & critical markers (chest pain, fever, eye, arm/leg pain) into Red, Yellow, or Green urgency levels.</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms severely based on body organ & critical markers (chest pain, fever, eye, arm/leg pain) into Red, Yellow or Green urgency levels.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
                         <span class="text-neutral-500 text-[10px]">03 / VOICE SYNTHESIS</span>
@@ -311,7 +311,7 @@ async def serve_frontend():
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-neutral-300 leading-relaxed">
                     <div class="bg-neutral-950 border border-neutral-800 p-6 rounded-xl space-y-2">
                         <h3 class="text-sm font-bold text-white">The Problem Statement</h3>
-                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) often struggle with language barriers, heavy patient queues, and rapid symptom categorization, leading to delayed emergency triage.</p>
+                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) often struggle with language barriers, heavy patient queues and rapid symptom categorization, leading to delayed emergency triage.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 p-6 rounded-xl space-y-2">
                         <h3 class="text-sm font-bold text-white">Sovereign AI Solution</h3>
