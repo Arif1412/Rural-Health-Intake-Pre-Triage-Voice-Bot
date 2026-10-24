@@ -113,7 +113,7 @@ async def serve_frontend():
         <div class="max-w-3xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-8">
             <header class="mb-8 text-center">
                 <span class="bg-cyan-500/10 text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider border border-cyan-500/20">Gnani AI Artha Stack</span>
-                <h1 class="text-3xl font-extrabold mt-3 tracking-tight text-white">Rural Health Intake & Pre-Triage Bot</h1>
+                <h1 class="text-3xl font-extrabold mt-3 tracking-tight text-white">AarogyaVoice: Rural Health Intake & Pre-Triage Bot</h1>
                 <p class="text-slate-400 text-sm mt-1">Sovereign Voice AI Assistant for Frontline Healthcare Workers</p>
             </header>
 
