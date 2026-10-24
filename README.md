@@ -34,3 +34,9 @@
  ┌────────────────────────┐      ┌────────────────────────┐      ┌────────────────────────┐
  │ Audio Playback in Colab│ <─── │ Timbre v2.5 (TTS)      │ <─── │ Symptom & Solutions    │
  └────────────────────────┘      └────────────────────────┘      └────────────────────────┘
+
+🚀 Quickstart Guide (Google Colab)
+* Open the Notebook in Google Colab.
+* Set up Secrets: Add your Gnani AI API key under Colab Secrets with the exact name: GNANI_API_KEY.
+* Run the Pipeline: Execute the code cell, upload any test patient audio file (.wav or .mp3), and experience the end-to-end voice loop!
+
