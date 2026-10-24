@@ -4,7 +4,7 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 import uvicorn
 
-app = FastAPI()
+app = FastAPI(title="AarogyaVoice")
 
 API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
@@ -97,94 +97,185 @@ async def get_audio():
         return FileResponse("response.wav", media_type="audio/wav")
     return JSONResponse({"error": "Audio not found"}, status_code=404)
 
-# Sleek Dark HTML Frontend Served at Root
+# Modern Ultra-Dark Minimalist Interface
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     return """
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="en" class="scroll-smooth">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Rural Health Intake & Pre-Triage Voice Assistant</title>
+        <title>AarogyaVoice — Sovereign AI Pre-Triage Assistant</title>
         <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+            body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050505; }
+            .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+        </style>
     </head>
-    <body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col items-center py-10 px-4">
-        <div class="max-w-3xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-8">
-            <header class="mb-8 text-center">
-                <span class="bg-cyan-500/10 text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider border border-cyan-500/20">Gnani AI Artha Stack</span>
-                <h1 class="text-3xl font-extrabold mt-3 tracking-tight text-white">AarogyaVoice: Rural Health Intake & Pre-Triage Bot</h1>
-                <p class="text-slate-400 text-sm mt-1">Sovereign Voice AI Assistant for Frontline Healthcare Workers</p>
-            </header>
+    <body class="text-neutral-200 min-h-screen flex flex-col items-center selection:bg-neutral-800 selection:text-white">
 
-            <!-- Upload Card -->
-            <div class="border-2 border-dashed border-slate-700 hover:border-cyan-500 transition rounded-xl p-8 text-center bg-slate-950/50 cursor-pointer mb-6" onclick="document.getElementById('audioFile').click()">
-                <input type="file" id="audioFile" accept="audio/*" class="hidden" onchange="handleFileSelect(event)">
-                <div id="uploadPrompt">
-                    <svg class="mx-auto h-12 w-12 text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                    <p class="text-sm font-medium text-slate-200">Click to upload or drag & drop patient audio (.wav, .mp3)</p>
-                    <p class="text-xs text-slate-500 mt-1">Supports Hindi, Hinglish & Regional Dialects</p>
-                </div>
-                <div id="fileInfo" class="hidden text-cyan-400 font-medium text-sm"></div>
+        <!-- Top Navigation Bar -->
+        <nav class="w-full max-w-5xl px-6 py-4 mt-4 flex items-center justify-between border border-neutral-800/80 bg-neutral-950/80 backdrop-blur-md rounded-2xl sticky top-4 z-50">
+            <div class="flex items-center space-x-3">
+                <span class="bg-neutral-900 border border-neutral-800 text-white font-bold text-xs px-2.5 py-1 rounded-md tracking-wide uppercase">AV</span>
+                <span class="font-bold text-white text-base tracking-tight">AarogyaVoice</span>
             </div>
-
-            <button onclick="analyzeAudio()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transition duration-200 flex items-center justify-center space-x-2">
-                <span>🚀 Run Clinical Pre-Triage Analysis</span>
-            </button>
-
-            <!-- Loading Spinner -->
-            <div id="loader" class="hidden text-center my-6">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-cyan-500 border-t-transparent"></div>
-                <p class="text-sm text-slate-400 mt-2">Processing with Prisma v2.5 & Timbre v2.5...</p>
+            <div class="hidden md:flex items-center space-x-6 text-xs font-medium text-neutral-400">
+                <a href="#intake" class="hover:text-white transition">Voice Intake</a>
+                <a href="#system" class="hover:text-white transition">System Architecture</a>
+                <a href="#about" class="hover:text-white transition">About Project</a>
             </div>
+            <a href="https://github.com/Arif1412/Rural-Health-Intake-Pre-Triage-Voice-Bot" target="_blank" class="bg-white text-black hover:bg-neutral-200 text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-2">
+                <span>GitHub Repo</span>
+            </a>
+        </nav>
 
-            <!-- Results Section -->
-            <div id="results" class="hidden mt-8 space-y-6 border-t border-slate-800 pt-6">
-                <div>
-                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">🗣️ Transcribed Speech (Prisma v2.5)</h3>
-                    <div id="transcriptBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-slate-200 text-sm"></div>
-                </div>
+        <main class="w-full max-w-5xl px-6 py-10 space-y-12">
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Hero Section -->
+            <section class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+                <!-- Left Bio / Mission Card -->
+                <div class="md:col-span-7 bg-neutral-900/40 border border-neutral-800/90 rounded-2xl p-8 flex flex-col justify-between">
                     <div>
-                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">🏥 Triage Level</h3>
-                        <div id="triageBadge" class="inline-block px-4 py-2 rounded-xl font-bold text-sm"></div>
+                        <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-emerald-400 text-xs font-medium mb-6">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Sovereign Voice AI Active</span>
+                        </div>
+                        <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                            Frontline Healthcare Intake & Pre-Triage Engine
+                        </h1>
+                        <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
+                            AarogyaVoice empowers community health workers in rural India to process patient audio in native regional dialects, run clinical pre-triage assessment, and return instant spoken guidance.
+                        </p>
                     </div>
+
+                    <!-- Tech Stack Pills -->
+                    <div class="mt-8 pt-6 border-t border-neutral-800/80 flex flex-wrap gap-2">
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Gnani Prisma v2.5 STT</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Gnani Timbre v2.5 TTS</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">FastAPI</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Render</span>
+                    </div>
+                </div>
+
+                <!-- Right Developer / System Code Config Box -->
+                <div class="md:col-span-5 bg-neutral-950 border border-neutral-800 rounded-2xl p-6 font-mono-code text-xs text-neutral-300 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+                    <div class="flex items-center justify-between pb-3 border-b border-neutral-800 text-neutral-500 text-[11px]">
+                        <span>system_config.json</span>
+                        <span class="text-emerald-400">● active</span>
+                    </div>
+                    <pre class="py-4 text-neutral-400 overflow-x-auto space-y-1">
+<span class="text-purple-400">const</span> <span class="text-blue-400">AarogyaVoice</span> = {
+  <span class="text-neutral-500">model_stt</span>: <span class="text-emerald-300">"Prisma v2.5"</span>,
+  <span class="text-neutral-500">model_tts</span>: <span class="text-emerald-300">"Timbre v2.5"</span>,
+  <span class="text-neutral-500">dialect</span>: <span class="text-amber-300">"hi-IN (Hindi)"</span>,
+  <span class="text-neutral-500">triage_tiers</span>: [<span class="text-red-400">"RED"</span>, <span class="text-amber-400">"YELLOW"</span>, <span class="text-emerald-400">"GREEN"</span>],
+  <span class="text-neutral-500">target_users</span>: <span class="text-emerald-300">"ASHA / ANM Workers"</span>
+};
+
+<span class="text-neutral-500">// Ready to process patient intake</span>
+<span class="text-blue-400">console</span>.log(<span class="text-emerald-300">"Pipeline initialized."</span>);</pre>
+                    <div class="pt-3 border-t border-neutral-800/80 text-[11px] text-neutral-500 flex justify-between">
+                        <span>Status: 200 OK</span>
+                        <span>Latency: &lt; 800ms</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Voice Intake Console Section -->
+            <section id="intake" class="bg-neutral-900/30 border border-neutral-800 rounded-2xl p-8">
+                <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">🔊 Spoken Voice Guidance (Timbre v2.5)</h3>
-                        <audio id="audioPlayer" controls class="w-full h-10"></audio>
+                        <h2 class="text-xl font-bold text-white tracking-tight">Clinical Voice Intake Console</h2>
+                        <p class="text-xs text-neutral-400 mt-1">Upload patient speech recording (.wav or .mp3) for instant analysis</p>
+                    </div>
+                    <span class="bg-neutral-900 text-neutral-400 border border-neutral-800 text-xs px-3 py-1 rounded-lg font-mono-code">Step 01 / 02</span>
+                </div>
+
+                <!-- Dropzone Card -->
+                <div class="border border-dashed border-neutral-800 hover:border-neutral-600 transition rounded-xl p-8 text-center bg-neutral-950/60 cursor-pointer mb-6" onclick="document.getElementById('audioFile').click()">
+                    <input type="file" id="audioFile" accept="audio/*" class="hidden" onchange="handleFileSelect(event)">
+                    <div id="uploadPrompt" class="space-y-3">
+                        <div class="w-10 h-10 mx-auto rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400">
+                            🎤
+                        </div>
+                        <p class="text-sm font-semibold text-neutral-200">Click or drop audio file here</p>
+                        <p class="text-xs text-neutral-500">Supports Hindi, Hinglish, & Regional Accents</p>
+                    </div>
+                    <div id="fileInfo" class="hidden text-emerald-400 font-mono-code text-xs"></div>
+                </div>
+
+                <button onclick="analyzeAudio()" class="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-6 rounded-xl transition duration-200 text-sm flex items-center justify-center space-x-2">
+                    <span>Execute Pre-Triage Pipeline</span>
+                </button>
+
+                <!-- Loading State -->
+                <div id="loader" class="hidden text-center my-8">
+                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Transcribing with Prisma v2.5 & synthesizing voice response...</p>
+                </div>
+
+                <!-- Results Grid -->
+                <div id="results" class="hidden mt-10 space-y-6 pt-6 border-t border-neutral-800">
+                    
+                    <!-- Top Summary Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                            <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Triage Urgency Assessment</span>
+                            <div id="triageBadge" class="inline-block px-3 py-1.5 rounded-lg font-bold text-xs"></div>
+                        </div>
+
+                        <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                            <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Voice Guidance (Timbre v2.5)</span>
+                            <audio id="audioPlayer" controls class="w-full h-8 mt-1"></audio>
+                        </div>
+                    </div>
+
+                    <!-- Transcript Box -->
+                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                        <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Vernacular Transcript (Prisma v2.5 STT)</span>
+                        <p id="transcriptBox" class="text-sm text-neutral-200 leading-relaxed font-mono-code"></p>
+                    </div>
+
+                    <!-- Patient Advice -->
+                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                        <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Localized Verbal Advice</span>
+                        <p id="adviceBox" class="text-sm text-neutral-200 leading-relaxed"></p>
+                    </div>
+
+                    <!-- Actionable Medical Steps -->
+                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                        <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-3">Action Plan for Health Worker</span>
+                        <ul id="solutionsList" class="text-xs text-neutral-300 space-y-2 list-disc list-inside font-mono-code"></ul>
                     </div>
                 </div>
+            </section>
 
-                <div>
-                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">💬 Patient Advice (Hindi)</h3>
-                    <div id="adviceBox" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-slate-200 text-sm"></div>
-                </div>
+        </main>
 
-                <div>
-                    <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">📋 Actionable Steps for Health Worker</h3>
-                    <ul id="solutionsList" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-slate-300 text-sm space-y-2 list-disc list-inside"></ul>
-                </div>
-            </div>
-        </div>
+        <!-- Footer -->
+        <footer class="w-full border-t border-neutral-900 py-6 mt-12 text-center text-xs text-neutral-600 font-mono-code">
+            <p>AarogyaVoice © 2026 — Built for Great Indian AI Internship Challenge</p>
+        </footer>
 
         <script>
             let selectedFile = null;
-            function handleFileSelect(event) {
-                selectedFile = event.target.files[0];
-                if (selectedFile) {
+            function handleFileSelect(e) {
+                selectedFile = e.target.files[0];
+                if(selectedFile) {
                     document.getElementById('uploadPrompt').classList.add('hidden');
                     const info = document.getElementById('fileInfo');
                     info.classList.remove('hidden');
-                    info.innerText = `Selected File: ${selectedFile.name} (${(selectedFile.size/1024/1024).toFixed(2)} MB)`;
+                    info.innerText = `Selected: ${selectedFile.name} (${(selectedFile.size/1024/1024).toFixed(2)} MB)`;
                 }
             }
 
             async function analyzeAudio() {
-                if (!selectedFile) {
-                    alert("Please select or upload an audio file first!");
-                    return;
-                }
+                if(!selectedFile) return alert("Please select an audio file first!");
                 const formData = new FormData();
                 formData.append("file", selectedFile);
                 formData.append("language", "hi-IN");
@@ -193,40 +284,37 @@ async def serve_frontend():
                 document.getElementById('results').classList.add('hidden');
 
                 try {
-                    const response = await fetch("/api/analyze", { method: "POST", body: formData });
-                    const result = await response.json();
-                    
+                    const res = await fetch("/api/analyze", { method: "POST", body: formData });
+                    const result = await res.json();
+
                     document.getElementById('transcriptBox').innerText = result.transcript;
-                    
                     const badge = document.getElementById('triageBadge');
                     badge.innerText = result.triage_level;
-                    if (result.triage_level.includes("RED")) {
-                        badge.className = "px-4 py-2 rounded-xl font-bold text-sm bg-red-500/20 text-red-400 border border-red-500/30";
-                    } else if (result.triage_level.includes("YELLOW")) {
-                        badge.className = "px-4 py-2 rounded-xl font-bold text-sm bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                    if(result.triage_level.includes("RED")) {
+                        badge.className = "px-3 py-1.5 rounded-lg font-bold text-xs bg-red-500/10 text-red-400 border border-red-500/20";
+                    } else if(result.triage_level.includes("YELLOW")) {
+                        badge.className = "px-3 py-1.5 rounded-lg font-bold text-xs bg-amber-500/10 text-amber-400 border border-amber-500/20";
                     } else {
-                        badge.className = "px-4 py-2 rounded-xl font-bold text-sm bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                        badge.className = "px-3 py-1.5 rounded-lg font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
                     }
 
                     document.getElementById('adviceBox').innerText = result.advice;
-                    
                     const list = document.getElementById('solutionsList');
                     list.innerHTML = "";
-                    result.solutions.forEach(sol => {
+                    result.solutions.forEach(s => {
                         const li = document.createElement('li');
-                        li.innerText = sol;
+                        li.innerText = s;
                         list.appendChild(li);
                     });
 
-                    if (result.audio_url) {
+                    if(result.audio_url) {
                         const player = document.getElementById('audioPlayer');
                         player.src = result.audio_url + "?t=" + new Date().getTime();
-                        player.play().catch(e => console.log("Autoplay blocked by browser policy"));
+                        player.play().catch(e => console.log(e));
                     }
-
                     document.getElementById('results').classList.remove('hidden');
-                } catch (err) {
-                    alert("Error processing request: " + err);
+                } catch(e) {
+                    alert("Error processing audio: " + e);
                 } finally {
                     document.getElementById('loader').classList.add('hidden');
                 }
