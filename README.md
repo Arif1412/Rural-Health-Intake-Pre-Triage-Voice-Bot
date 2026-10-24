@@ -10,7 +10,7 @@
 ---
 
 ## 🚀 Live Demo & Submission Links
-* **Live Web Application:** [https://aarogyavoice.onrender.com](https://your-render-url.onrender.com) *(Replace with your actual Render URL)*
+* **Live Web Application:** [https://aarogyavoice.onrender.com](https://aarogyavoice.onrender.com/)
 * **Challenge:** Great Indian AI Internship Challenge
 
 ---
