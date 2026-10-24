@@ -41,12 +41,6 @@ Built entirely on sovereign Indian AI infrastructure:
 
 ---
 
-## 📂 Project Structure
-```text
-├── app.py                # Unified FastAPI backend & Tailwind CSS frontend
-├── requirements.txt      # Python dependencies (fastapi, uvicorn, requests, etc.)
-└── README.md             # Project documentation
-
 ## 🏗️ Architecture & Pipeline Flow
 
 ```text
