@@ -119,17 +119,17 @@ async def serve_frontend():
     <body class="text-neutral-200 min-h-screen flex flex-col items-center selection:bg-neutral-800 selection:text-white">
 
         <!-- Top Navigation Bar -->
-        <nav class="w-full max-w-5xl px-6 py-4 mt-4 flex items-center justify-between border border-neutral-800/80 bg-neutral-950/80 backdrop-blur-md rounded-2xl sticky top-4 z-50">
+        <nav class="w-full max-w-5xl px-6 py-4 mt-4 flex items-center justify-between border border-neutral-800/80 bg-neutral-950/80 backdrop-blur-md rounded-2xl sticky top-4 z-50 shadow-lg transition-all duration-300">
             <a href="#top" class="flex items-center space-x-3 group cursor-pointer">
-                <span class="bg-neutral-900 border border-neutral-800 text-white font-bold text-xs px-2.5 py-1 rounded-md tracking-wide uppercase group-hover:border-neutral-600 transition">AV</span>
-                <span class="font-bold text-white text-base tracking-tight group-hover:text-neutral-300 transition">AarogyaVoice</span>
+                <span class="bg-neutral-900 border border-neutral-800 text-white font-bold text-xs px-2.5 py-1 rounded-md tracking-wide uppercase group-hover:border-neutral-500 group-hover:bg-neutral-800 transition-all duration-300">AV</span>
+                <span class="font-bold text-white text-base tracking-tight group-hover:text-neutral-300 transition-colors duration-300">AarogyaVoice</span>
             </a>
             <div class="hidden md:flex items-center space-x-6 text-xs font-medium text-neutral-400">
-                <a href="#intake" class="hover:text-white transition">Voice Intake</a>
-                <a href="#system" class="hover:text-white transition">System Architecture</a>
-                <a href="#about" class="hover:text-white transition">About Project</a>
+                <a href="#intake" class="hover:text-white hover:translate-y-[-1px] transition-all duration-200">Voice Intake</a>
+                <a href="#system" class="hover:text-white hover:translate-y-[-1px] transition-all duration-200">System Architecture</a>
+                <a href="#about" class="hover:text-white hover:translate-y-[-1px] transition-all duration-200">About Project</a>
             </div>
-            <a href="https://github.com/Arif1412/Rural-Health-Intake-Pre-Triage-Voice-Bot" target="_blank" class="bg-white text-black hover:bg-neutral-200 text-xs font-semibold px-4 py-2 rounded-lg transition flex items-center space-x-2">
+            <a href="https://github.com/Arif1412/Rural-Health-Intake-Pre-Triage-Voice-Bot" target="_blank" class="bg-white text-black hover:bg-neutral-200 hover:scale-[1.02] active:scale-[0.98] text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md">
                 <span>GitHub Repo</span>
             </a>
         </nav>
@@ -138,7 +138,7 @@ async def serve_frontend():
 
             <!-- Hero Section -->
             <section class="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-                <div class="md:col-span-7 bg-neutral-900/40 border border-neutral-800/90 hover:border-neutral-700 transition duration-300 rounded-2xl p-8 flex flex-col justify-between">
+                <div class="md:col-span-7 bg-neutral-900/40 border border-neutral-800/90 hover:border-neutral-600 hover:bg-neutral-900/60 transition-all duration-300 rounded-2xl p-8 flex flex-col justify-between shadow-xl">
                     <div>
                         <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-emerald-400 text-xs font-medium mb-6">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -148,19 +148,19 @@ async def serve_frontend():
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers (ASHA/ANM) in rural India to capture patient speech in sovereign vernacular dialects, process clinical pre-triage assessment, and return instant spoken guidance.
+                            AarogyaVoice empowers community health workers (ASHA/ANM) in rural India to capture patient speech in sovereign vernacular dialects, process clinical pre-triage assessment and return instant spoken guidance.
                         </p>
                     </div>
 
                     <div class="mt-8 pt-6 border-t border-neutral-800/80 flex flex-wrap gap-2">
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Gnani Prisma v2.5 STT</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Gnani Timbre v2.5 TTS</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">FastAPI</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Render Deployment</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Gnani Prisma v2.5 STT</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Gnani Timbre v2.5 TTS</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">FastAPI</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Render Deployment</span>
                     </div>
                 </div>
 
-                <div class="md:col-span-5 bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition duration-300 rounded-2xl p-6 font-mono-code text-xs text-neutral-300 flex flex-col justify-between shadow-2xl relative overflow-hidden">
+                <div class="md:col-span-5 bg-neutral-950 border border-neutral-800 hover:border-neutral-600 transition-all duration-300 rounded-2xl p-6 font-mono-code text-xs text-neutral-300 flex flex-col justify-between shadow-2xl relative overflow-hidden">
                     <div class="flex items-center justify-between pb-3 border-b border-neutral-800 text-neutral-500 text-[11px]">
                         <span>system_config.json</span>
                         <span class="text-emerald-400">● active</span>
@@ -184,54 +184,29 @@ async def serve_frontend():
             </section>
 
             <!-- Voice Intake Console Section -->
-            <section id="intake" class="bg-neutral-900/30 border border-neutral-800 rounded-2xl p-8">
+            <section id="intake" class="bg-neutral-900/30 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 rounded-2xl p-8 shadow-xl">
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Clinical Voice Intake Console</h2>
-                        <p class="text-xs text-neutral-400 mt-1">Record live audio via microphone or upload an audio recording (.wav, .mp3)</p>
+                        <p class="text-xs text-neutral-400 mt-1">Upload patient audio recording (.wav or .mp3) for instant analysis</p>
                     </div>
                     <span class="bg-neutral-900 text-neutral-400 border border-neutral-800 text-xs px-3 py-1 rounded-lg font-mono-code">Step 01 / 02</span>
                 </div>
 
-                <!-- Dual Intake Grid: Live Microphone + Upload -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    
-                    <!-- Option A: Live Microphone Recorder -->
-                    <div class="border border-neutral-800 hover:border-neutral-600 transition rounded-xl p-6 bg-neutral-950/60 text-center flex flex-col justify-between">
-                        <div>
-                            <div class="w-10 h-10 mx-auto rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-rose-500 mb-3">
-                                <span id="recordDot" class="w-3 h-3 rounded-full bg-rose-500"></span>
-                            </div>
-                            <p class="text-sm font-semibold text-neutral-200">Real-Time Microphone</p>
-                            <p id="recTimer" class="text-xs text-neutral-500 mt-1 font-mono-code">00:00</p>
+                <!-- Dropzone Card -->
+                <div class="border border-dashed border-neutral-800 hover:border-neutral-500 hover:bg-neutral-950/90 transition-all duration-300 rounded-xl p-8 text-center bg-neutral-950/60 cursor-pointer mb-6 shadow-inner group" onclick="document.getElementById('audioFile').click()">
+                    <input type="file" id="audioFile" accept="audio/*" class="hidden" onchange="handleFileSelect(event)">
+                    <div id="uploadPrompt" class="space-y-3">
+                        <div class="w-10 h-10 mx-auto rounded-full bg-neutral-900 border border-neutral-800 group-hover:border-neutral-500 group-hover:scale-110 transition-all duration-300 flex items-center justify-center text-neutral-400">
+                            📁
                         </div>
-                        <div class="mt-4">
-                            <button id="recBtn" onclick="toggleRecording()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-medium py-2 px-4 rounded-lg transition text-xs flex items-center justify-center space-x-2">
-                                <span id="recBtnText">🔴 Start Live Recording</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Option B: File Upload Dropzone -->
-                    <div class="border border-neutral-800 hover:border-neutral-600 transition rounded-xl p-6 bg-neutral-950/60 text-center flex flex-col justify-between cursor-pointer" onclick="document.getElementById('audioFile').click()">
-                        <input type="file" id="audioFile" accept="audio/*" class="hidden" onchange="handleFileSelect(event)">
-                        <div>
-                            <div class="w-10 h-10 mx-auto rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400 mb-3">
-                                📁
-                            </div>
-                            <p class="text-sm font-semibold text-neutral-200">Upload Pre-recorded Audio</p>
-                            <p class="text-xs text-neutral-500 mt-1">Supports .wav, .mp3 audio files</p>
-                        </div>
-                        <div class="mt-4">
-                            <span class="w-full inline-block bg-neutral-900 border border-neutral-800 text-neutral-300 font-medium py-2 px-4 rounded-lg text-xs">
-                                Browse Files
-                            </span>
-                        </div>
+                        <p class="text-sm font-semibold text-neutral-200 group-hover:text-white transition-colors duration-200">Click or drop audio file here</p>
+                        <p class="text-xs text-neutral-500">Supports Hindi, Hinglish & Regional Accents (.wav, .mp3)</p>
                     </div>
                 </div>
 
-                <!-- Audio Preview Panel (Appears after recording or file selection) -->
-                <div id="previewContainer" class="hidden bg-neutral-950 border border-neutral-800 rounded-xl p-5 mb-6 space-y-3">
+                <!-- Audio Preview Panel -->
+                <div id="previewContainer" class="hidden bg-neutral-950 border border-neutral-800 rounded-xl p-5 mb-6 space-y-3 shadow-lg">
                     <div class="flex items-center justify-between">
                         <span id="fileInfo" class="text-emerald-400 font-mono-code text-xs"></span>
                         <span class="text-[10px] uppercase font-mono-code bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded">Ready to Analyze</span>
@@ -241,8 +216,8 @@ async def serve_frontend():
                     </div>
                 </div>
 
-                <button onclick="analyzeAudio()" class="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-6 rounded-xl transition duration-200 text-sm flex items-center justify-center space-x-2">
-                    <span>Execute Pre-Triage Pipeline</span>
+                <button onclick="analyzeAudio()" class="w-full bg-white hover:bg-neutral-200 hover:scale-[1.01] active:scale-[0.99] text-black font-semibold py-3 px-6 rounded-xl transition-all duration-200 text-sm flex items-center justify-center space-x-2 shadow-lg">
+                    <span>Execute</span>
                 </button>
 
                 <!-- Loading Spinner -->
@@ -254,28 +229,28 @@ async def serve_frontend():
                 <!-- Results Output Grid -->
                 <div id="results" class="hidden mt-10 space-y-6 pt-6 border-t border-neutral-800">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                        <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
                             <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Triage Urgency Assessment</span>
                             <div id="triageBadge" class="inline-block px-3 py-1.5 rounded-lg font-bold text-xs"></div>
                         </div>
 
-                        <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                        <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
                             <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Voice Guidance (Timbre v2.5)</span>
                             <audio id="audioPlayer" controls class="w-full h-8 mt-1"></audio>
                         </div>
                     </div>
 
-                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
                         <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Vernacular Transcript (Prisma v2.5 STT)</span>
                         <p id="transcriptBox" class="text-sm text-neutral-200 leading-relaxed font-mono-code"></p>
                     </div>
 
-                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
                         <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Localized Verbal Advice</span>
                         <p id="adviceBox" class="text-sm text-neutral-200 leading-relaxed"></p>
                     </div>
 
-                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
                         <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-3">Action Plan for Health Worker</span>
                         <ul id="solutionsList" class="text-xs text-neutral-300 space-y-2 list-disc list-inside font-mono-code"></ul>
                     </div>
@@ -283,23 +258,23 @@ async def serve_frontend():
             </section>
 
             <!-- System Architecture Section -->
-            <section id="system" class="bg-neutral-900/30 border border-neutral-800 rounded-2xl p-8 space-y-6">
+            <section id="system" class="bg-neutral-900/30 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 rounded-2xl p-8 space-y-6 shadow-xl">
                 <div>
                     <h2 class="text-xl font-bold text-white tracking-tight">System Architecture</h2>
                     <p class="text-xs text-neutral-400 mt-1">End-to-end processing pipeline powered by Gnani AI Artha Stack</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono-code text-xs">
-                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
                         <span class="text-neutral-500 text-[10px]">01 / STT PIPELINE</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Prisma v2.5</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from Indian languages into accurate text with native numeral normalization (<code class="text-amber-400">itn_native_numerals</code>).</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from Indian languages into accurate text with native numeral normalization.</p>
                     </div>
-                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
                         <span class="text-neutral-500 text-[10px]">02 / CLINICAL LOGIC</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Pre-Triage Engine</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms severely based on body organ & critical markers (chest pain, fever, eye, arm/leg pain) into Red, Yellow, or Green urgency levels.</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms severely based on body organ & critical markers (chest pain, fever, eye, arm/leg pain) into Red, Yellow or Green urgency levels.</p>
                     </div>
-                    <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
                         <span class="text-neutral-500 text-[10px]">03 / VOICE SYNTHESIS</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Timbre v2.5</h3>
                         <p class="text-neutral-400 text-[11px] leading-relaxed">Synthesizes natural, localized voice instructions ('Nalini' voice model at 24kHz) to guide health workers and patients immediately.</p>
@@ -308,17 +283,17 @@ async def serve_frontend():
             </section>
 
             <!-- About Project Section -->
-            <section id="about" class="bg-neutral-900/30 border border-neutral-800 rounded-2xl p-8 space-y-6">
+            <section id="about" class="bg-neutral-900/30 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 rounded-2xl p-8 space-y-6 shadow-xl">
                 <div>
                     <h2 class="text-xl font-bold text-white tracking-tight">About Project</h2>
                     <p class="text-xs text-neutral-400 mt-1">Addressing healthcare delivery challenges across rural India</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-neutral-300 leading-relaxed">
-                    <div class="bg-neutral-950 border border-neutral-800 p-6 rounded-xl space-y-2">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-600 hover:-translate-y-1 transition-all duration-300 p-6 rounded-xl space-y-2 shadow-lg">
                         <h3 class="text-sm font-bold text-white">The Problem Statement</h3>
-                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) often struggle with language barriers, heavy patient queues, and rapid symptom categorization, leading to delayed emergency triage.</p>
+                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) often struggle with language barriers, heavy patient queues and rapid symptom categorization, leading to delayed emergency triage.</p>
                     </div>
-                    <div class="bg-neutral-950 border border-neutral-800 p-6 rounded-xl space-y-2">
+                    <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-600 hover:-translate-y-1 transition-all duration-300 p-6 rounded-xl space-y-2 shadow-lg">
                         <h3 class="text-sm font-bold text-white">Sovereign AI Solution</h3>
                         <p class="text-neutral-400">AarogyaVoice leverages indigenous voice technology built specifically for Indian languages. It bridges the gap between patient speech intake and immediate clinical triage advice without requiring complex text interfaces.</p>
                     </div>
@@ -333,82 +308,25 @@ async def serve_frontend():
 
         <script>
             let selectedFile = null;
-            let mediaRecorder = null;
-            let audioChunks = [];
-            let recInterval = null;
-            let recSeconds = 0;
 
-            // Handle Audio Upload File Selection & Show Audio Preview
             function handleFileSelect(e) {
                 selectedFile = e.target.files[0];
                 if(selectedFile) {
                     const info = document.getElementById('fileInfo');
                     const container = document.getElementById('previewContainer');
                     const previewPlayer = document.getElementById('previewAudioPlayer');
+                    const uploadPrompt = document.getElementById('uploadPrompt');
 
                     info.innerText = `Selected File: ${selectedFile.name} (${(selectedFile.size/1024/1024).toFixed(2)} MB)`;
                     
-                    // Create local object URL for instant preview playback
                     previewPlayer.src = URL.createObjectURL(selectedFile);
                     container.classList.remove('hidden');
+                    uploadPrompt.innerHTML = `<div class="w-10 h-10 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2">✅</div><p class="text-sm font-semibold text-emerald-400">Audio File Loaded Successfully</p><p class="text-xs text-neutral-500">Click or drop another file to replace</p>`;
                 }
             }
 
-            // Real-Time Audio Recording Logic with Instant Preview
-            async function toggleRecording() {
-                const btnText = document.getElementById('recBtnText');
-                const dot = document.getElementById('recordDot');
-                const info = document.getElementById('fileInfo');
-                const container = document.getElementById('previewContainer');
-                const previewPlayer = document.getElementById('previewAudioPlayer');
-
-                if (!mediaRecorder || mediaRecorder.state === 'inactive') {
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                        mediaRecorder = new MediaRecorder(stream);
-                        audioChunks = [];
-
-                        mediaRecorder.ondataavailable = event => {
-                            if (event.data.size > 0) audioChunks.push(event.data);
-                        };
-
-                        mediaRecorder.onstop = () => {
-                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                            selectedFile = new File([audioBlob], "live_recording.wav", { type: 'audio/wav' });
-                            
-                            info.innerText = `Live Recording Captured: live_recording.wav (${(selectedFile.size/1024).toFixed(1)} KB)`;
-                            previewPlayer.src = URL.createObjectURL(audioBlob);
-                            container.classList.remove('hidden');
-
-                            stream.getTracks().forEach(track => track.stop());
-                        };
-
-                        mediaRecorder.start();
-                        btnText.innerText = "⏹️ Stop Recording";
-                        dot.classList.add("animate-ping");
-
-                        recSeconds = 0;
-                        recInterval = setInterval(() => {
-                            recSeconds++;
-                            const mins = String(Math.floor(recSeconds / 60)).padStart(2, '0');
-                            const secs = String(recSeconds % 60).padStart(2, '0');
-                            document.getElementById('recTimer').innerText = `${mins}:${secs}`;
-                        }, 1000);
-
-                    } catch (err) {
-                        alert("Microphone permission denied or not supported: " + err);
-                    }
-                } else if (mediaRecorder.state === 'recording') {
-                    mediaRecorder.stop();
-                    clearInterval(recInterval);
-                    btnText.innerText = "🔴 Record Again";
-                    dot.classList.remove("animate-ping");
-                }
-            }
-
-            // Execute Triage Analysis API Request
             async function analyzeAudio() {
-                if(!selectedFile) return alert("Please capture live microphone audio or select an audio file first!");
+                if(!selectedFile) return alert("Please select an audio file first!");
                 const formData = new FormData();
                 formData.append("file", selectedFile);
                 formData.append("language", "hi-IN");
