@@ -148,7 +148,7 @@ async def serve_frontend():
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers (ASHA/ANM) in rural India to capture patient speech in sovereign vernacular dialects, process clinical pre-triage assessment and return instant spoken guidance.
+                            AarogyaVoice empowers community health workers (ASHA/ANM) in rural India to capture patient speech in sovereign vernacular dialects, process clinical pre-triage assessment, and return instant spoken guidance.
                         </p>
                     </div>
 
@@ -188,24 +188,49 @@ async def serve_frontend():
                 <div class="flex items-center justify-between mb-6">
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Clinical Voice Intake Console</h2>
-                        <p class="text-xs text-neutral-400 mt-1">Upload patient audio recording (.wav or .mp3) for instant analysis</p>
+                        <p class="text-xs text-neutral-400 mt-1">Record live audio via microphone or upload an audio recording (.wav, .mp3)</p>
                     </div>
                     <span class="bg-neutral-900 text-neutral-400 border border-neutral-800 text-xs px-3 py-1 rounded-lg font-mono-code">Step 01 / 02</span>
                 </div>
 
-                <!-- Dropzone Card -->
-                <div class="border border-dashed border-neutral-800 hover:border-neutral-600 transition rounded-xl p-8 text-center bg-neutral-950/60 cursor-pointer mb-6" onclick="document.getElementById('audioFile').click()">
-                    <input type="file" id="audioFile" accept="audio/*" class="hidden" onchange="handleFileSelect(event)">
-                    <div id="uploadPrompt" class="space-y-3">
-                        <div class="w-10 h-10 mx-auto rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400">
-                            📁
+                <!-- Dual Intake Grid: Live Microphone + Upload -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    
+                    <!-- Option A: Live Microphone Recorder -->
+                    <div class="border border-neutral-800 hover:border-neutral-600 transition rounded-xl p-6 bg-neutral-950/60 text-center flex flex-col justify-between">
+                        <div>
+                            <div class="w-10 h-10 mx-auto rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-rose-500 mb-3">
+                                <span id="recordDot" class="w-3 h-3 rounded-full bg-rose-500"></span>
+                            </div>
+                            <p class="text-sm font-semibold text-neutral-200">Real-Time Microphone</p>
+                            <p id="recTimer" class="text-xs text-neutral-500 mt-1 font-mono-code">00:00</p>
                         </div>
-                        <p class="text-sm font-semibold text-neutral-200">Click or drop audio file here</p>
-                        <p class="text-xs text-neutral-500">Supports Hindi, Hinglish & Regional Accents (.wav, .mp3)</p>
+                        <div class="mt-4">
+                            <button id="recBtn" onclick="toggleRecording()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-medium py-2 px-4 rounded-lg transition text-xs flex items-center justify-center space-x-2">
+                                <span id="recBtnText">🔴 Start Live Recording</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Option B: File Upload Dropzone -->
+                    <div class="border border-neutral-800 hover:border-neutral-600 transition rounded-xl p-6 bg-neutral-950/60 text-center flex flex-col justify-between cursor-pointer" onclick="document.getElementById('audioFile').click()">
+                        <input type="file" id="audioFile" accept="audio/*" class="hidden" onchange="handleFileSelect(event)">
+                        <div>
+                            <div class="w-10 h-10 mx-auto rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-400 mb-3">
+                                📁
+                            </div>
+                            <p class="text-sm font-semibold text-neutral-200">Upload Pre-recorded Audio</p>
+                            <p class="text-xs text-neutral-500 mt-1">Supports .wav, .mp3 audio files</p>
+                        </div>
+                        <div class="mt-4">
+                            <span class="w-full inline-block bg-neutral-900 border border-neutral-800 text-neutral-300 font-medium py-2 px-4 rounded-lg text-xs">
+                                Browse Files
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Audio Preview Panel (Appears after selecting file) -->
+                <!-- Audio Preview Panel (Appears after recording or file selection) -->
                 <div id="previewContainer" class="hidden bg-neutral-950 border border-neutral-800 rounded-xl p-5 mb-6 space-y-3">
                     <div class="flex items-center justify-between">
                         <span id="fileInfo" class="text-emerald-400 font-mono-code text-xs"></span>
@@ -217,7 +242,7 @@ async def serve_frontend():
                 </div>
 
                 <button onclick="analyzeAudio()" class="w-full bg-white hover:bg-neutral-200 text-black font-semibold py-3 px-6 rounded-xl transition duration-200 text-sm flex items-center justify-center space-x-2">
-                    <span>Execute</span>
+                    <span>Execute Pre-Triage Pipeline</span>
                 </button>
 
                 <!-- Loading Spinner -->
@@ -267,12 +292,12 @@ async def serve_frontend():
                     <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
                         <span class="text-neutral-500 text-[10px]">01 / STT PIPELINE</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Prisma v2.5</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from Indian languages into accurate text with native numeral normalization.</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from Indian languages into accurate text with native numeral normalization (<code class="text-amber-400">itn_native_numerals</code>).</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
                         <span class="text-neutral-500 text-[10px]">02 / CLINICAL LOGIC</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Pre-Triage Engine</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms severely based on body organ & critical markers (chest pain, fever, eye, arm/leg pain) into Red, Yellow or Green urgency levels.</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms severely based on body organ & critical markers (chest pain, fever, eye, arm/leg pain) into Red, Yellow, or Green urgency levels.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 p-5 rounded-xl hover:border-neutral-700 transition">
                         <span class="text-neutral-500 text-[10px]">03 / VOICE SYNTHESIS</span>
@@ -291,7 +316,7 @@ async def serve_frontend():
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-neutral-300 leading-relaxed">
                     <div class="bg-neutral-950 border border-neutral-800 p-6 rounded-xl space-y-2">
                         <h3 class="text-sm font-bold text-white">The Problem Statement</h3>
-                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) often struggle with language barriers, heavy patient queues and rapid symptom categorization, leading to delayed emergency triage.</p>
+                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) often struggle with language barriers, heavy patient queues, and rapid symptom categorization, leading to delayed emergency triage.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 p-6 rounded-xl space-y-2">
                         <h3 class="text-sm font-bold text-white">Sovereign AI Solution</h3>
@@ -308,6 +333,10 @@ async def serve_frontend():
 
         <script>
             let selectedFile = null;
+            let mediaRecorder = null;
+            let audioChunks = [];
+            let recInterval = null;
+            let recSeconds = 0;
 
             // Handle Audio Upload File Selection & Show Audio Preview
             function handleFileSelect(e) {
@@ -316,20 +345,70 @@ async def serve_frontend():
                     const info = document.getElementById('fileInfo');
                     const container = document.getElementById('previewContainer');
                     const previewPlayer = document.getElementById('previewAudioPlayer');
-                    const uploadPrompt = document.getElementById('uploadPrompt');
 
                     info.innerText = `Selected File: ${selectedFile.name} (${(selectedFile.size/1024/1024).toFixed(2)} MB)`;
                     
                     // Create local object URL for instant preview playback
                     previewPlayer.src = URL.createObjectURL(selectedFile);
                     container.classList.remove('hidden');
-                    uploadPrompt.innerHTML = `<div class="w-10 h-10 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2">✅</div><p class="text-sm font-semibold text-emerald-400">Audio File Loaded Successfully</p><p class="text-xs text-neutral-500">Click or drop another file to replace</p>`;
+                }
+            }
+
+            // Real-Time Audio Recording Logic with Instant Preview
+            async function toggleRecording() {
+                const btnText = document.getElementById('recBtnText');
+                const dot = document.getElementById('recordDot');
+                const info = document.getElementById('fileInfo');
+                const container = document.getElementById('previewContainer');
+                const previewPlayer = document.getElementById('previewAudioPlayer');
+
+                if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+
+                        mediaRecorder.ondataavailable = event => {
+                            if (event.data.size > 0) audioChunks.push(event.data);
+                        };
+
+                        mediaRecorder.onstop = () => {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                            selectedFile = new File([audioBlob], "live_recording.wav", { type: 'audio/wav' });
+                            
+                            info.innerText = `Live Recording Captured: live_recording.wav (${(selectedFile.size/1024).toFixed(1)} KB)`;
+                            previewPlayer.src = URL.createObjectURL(audioBlob);
+                            container.classList.remove('hidden');
+
+                            stream.getTracks().forEach(track => track.stop());
+                        };
+
+                        mediaRecorder.start();
+                        btnText.innerText = "⏹️ Stop Recording";
+                        dot.classList.add("animate-ping");
+
+                        recSeconds = 0;
+                        recInterval = setInterval(() => {
+                            recSeconds++;
+                            const mins = String(Math.floor(recSeconds / 60)).padStart(2, '0');
+                            const secs = String(recSeconds % 60).padStart(2, '0');
+                            document.getElementById('recTimer').innerText = `${mins}:${secs}`;
+                        }, 1000);
+
+                    } catch (err) {
+                        alert("Microphone permission denied or not supported: " + err);
+                    }
+                } else if (mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    clearInterval(recInterval);
+                    btnText.innerText = "🔴 Record Again";
+                    dot.classList.remove("animate-ping");
                 }
             }
 
             // Execute Triage Analysis API Request
             async function analyzeAudio() {
-                if(!selectedFile) return alert("Please select an audio file first!");
+                if(!selectedFile) return alert("Please capture live microphone audio or select an audio file first!");
                 const formData = new FormData();
                 formData.append("file", selectedFile);
                 formData.append("language", "hi-IN");
