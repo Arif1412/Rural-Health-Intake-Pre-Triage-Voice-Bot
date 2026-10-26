@@ -368,13 +368,13 @@ async def serve_frontend():
                     <div>
                         <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-emerald-400 text-xs font-medium mb-6">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>Auto-Detect Language Voice AI Active</span>
+                            <span>Sovereign AI Active</span>
                         </div>
                         <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers (ASHA/ANM) across India to capture patient speech, automatically detecting regional dialects, processing clinical pre-triage assessment, and returning instant spoken guidance.
+                            AarogyaVoice empowers community health workers (ASHA/ANM) across India to capture patient speech, automatically detecting regional dialects, processing clinical pre-triage assessment and returning instant spoken guidance.
                         </p>
                     </div>
 
