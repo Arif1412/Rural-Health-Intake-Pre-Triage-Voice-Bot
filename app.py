@@ -10,13 +10,14 @@ API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS_KEY = {"X-API-Key-ID": API_KEY} if API_KEY else {}
 
+# Voice Mapping for Timbre v2.5 TTS across Indian Languages
 VOICE_MAP = {
-    "hi-IN": "Nalini",   
-    "bn-IN": "Srabani",  
-    "ta-IN": "Kavitha",  
-    "te-IN": "Padma",    
-    "mr-IN": "Pooja",    
-    "en-IN": "Nalini"    
+    "hi-IN": "Nalini",   # Hindi
+    "bn-IN": "Srabani",  # Bengali
+    "ta-IN": "Kavitha",  # Tamil
+    "te-IN": "Padma",    # Telugu
+    "mr-IN": "Pooja",    # Marathi
+    "en-IN": "Nalini"    # English
 }
 
 def transcribe_audio_file(file_path, language_code="hi-IN"):
@@ -161,21 +162,29 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
 
     return tier, advice, solutions
 
+# Gnani AI Timbre v2.5 TTS Integration
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
     if not API_KEY:
         return None
     url = f"{BASE_URL}/api/v1/tts/inference"
     voice_name = VOICE_MAP.get(language_code, "Nalini")
     payload = {
-        "text": text, "voice": voice_name, "model": "timbre-v2.5",
-        "language": language_code, "speed": 1.0,
-        "audio_config": {"sample_rate": 24000, "container": "wav"}
+        "text": text,
+        "voice": voice_name,
+        "model": "timbre-v2.5",
+        "language": language_code,
+        "speed": 1.0,
+        "audio_config": {
+            "sample_rate": 24000,
+            "container": "wav"
+        }
     }
     response = requests.post(url, headers={**HEADERS_KEY, "Content-Type": "application/json"}, json=payload)
     if response.status_code == 200 and len(response.content) > 100:
         with open(output_filename, "wb") as f:
             f.write(response.content)
         return output_filename
+    print(f"Gnani TTS API Error [{response.status_code}]: {response.text}")
     return None
 
 @app.post("/api/analyze")
@@ -186,6 +195,8 @@ async def analyze_audio(file: UploadFile = File(...), language: str = Form("hi-I
         
     transcript = transcribe_audio_file(temp_filename, language_code=language)
     triage_level, advice, solutions = evaluate_symptoms_and_solutions(transcript, language_code=language)
+    
+    # Generate audio using Gnani AI Timbre v2.5
     audio_output_path = synthesize_voice(advice, language_code=language)
     
     if os.path.exists(temp_filename):
@@ -255,7 +266,7 @@ async def serve_frontend():
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers (ASHA/ANM) across India to capture patient speech in 6 major Indic dialects, process clinical pre-triage assessment and return instant spoken guidance.
+                            AarogyaVoice empowers community health workers (ASHA/ANM) across India to capture patient speech in 6 major Indic dialects, process clinical pre-triage assessment and return instant spoken guidance via Timbre v2.5 TTS.
                         </p>
                     </div>
 
@@ -281,7 +292,7 @@ async def serve_frontend():
 };</pre>
                     <div class="pt-3 border-t border-neutral-800/80 text-[11px] text-neutral-500 flex justify-between">
                         <span>Status: 200 OK</span>
-                        <span>Multi-Dialect Ready</span>
+                        <span>Gnani API Ready</span>
                     </div>
                 </div>
             </section>
@@ -303,7 +314,7 @@ async def serve_frontend():
                             <option value="ta-IN">🇮🇳 Tamil (தமிழ்)</option>
                             <option value="te-IN">🇮🇳 Telugu (తెలుగు)</option>
                             <option value="mr-IN">🇮🇳 Marathi (मराठी)</option>
-                            <option value="en-IN">🇮🇳 English (Indian Accent)</option>
+                            <option value="en-IN">🌐 English (Indian Accent)</option>
                         </select>
                     </div>
                 </div>
@@ -338,7 +349,7 @@ async def serve_frontend():
                 <!-- Loading Spinner -->
                 <div id="loader" class="hidden text-center my-8">
                     <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Transcribing speech & synthesizing regional voice response...</p>
+                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Transcribing speech & synthesizing Gnani Timbre v2.5 audio...</p>
                 </div>
 
                 <!-- Results Output Grid -->
@@ -350,10 +361,7 @@ async def serve_frontend():
                         </div>
 
                         <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider">Voice Guidance</span>
-                                <button onclick="speakAdvice()" id="speakBtn" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-mono-code px-2 py-0.5 rounded transition-all">🔊 Speak Guidance</button>
-                            </div>
+                            <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Voice Guidance (Timbre v2.5)</span>
                             <audio id="audioPlayer" controls class="w-full h-8 mt-1"></audio>
                         </div>
                     </div>
@@ -426,8 +434,6 @@ async def serve_frontend():
 
         <script>
             let selectedFile = null;
-            let currentAdviceText = "";
-            let currentLangCode = "hi-IN";
 
             function handleFileSelect(e) {
                 selectedFile = e.target.files[0];
@@ -444,20 +450,13 @@ async def serve_frontend():
                 }
             }
 
-            function speakAdvice() {
-                if (!currentAdviceText) return;
-                const utterance = new SpeechSynthesisUtterance(currentAdviceText);
-                utterance.lang = currentLangCode; // e.g. bn-IN, hi-IN, etc.
-                window.speechSynthesis.speak(utterance);
-            }
-
             async function analyzeAudio() {
                 if(!selectedFile) return alert("Please select an audio file first!");
-                currentLangCode = document.getElementById('languageSelect').value;
+                const lang = document.getElementById('languageSelect').value;
 
                 const formData = new FormData();
                 formData.append("file", selectedFile);
-                formData.append("language", currentLangCode);
+                formData.append("language", lang);
 
                 document.getElementById('loader').classList.remove('hidden');
                 document.getElementById('results').classList.add('hidden');
@@ -467,8 +466,7 @@ async def serve_frontend():
                     const result = await res.json();
 
                     document.getElementById('transcriptBox').innerText = result.transcript;
-                    currentAdviceText = result.advice;
-                    document.getElementById('adviceBox').innerText = currentAdviceText;
+                    document.getElementById('adviceBox').innerText = result.advice;
 
                     const badge = document.getElementById('triageBadge');
                     badge.innerText = result.triage_level;
@@ -492,10 +490,9 @@ async def serve_frontend():
                         const player = document.getElementById('audioPlayer');
                         player.src = result.audio_url + "?t=" + new Date().getTime();
                         player.load();
+                        // Automatically play audio element once loaded
+                        player.play().catch(err => console.log("Autoplay blocked by browser policy, user can press play.", err));
                     }
-
-                    // Show Speak fallback button
-                    document.getElementById('speakBtn').classList.remove('hidden');
 
                     document.getElementById('results').classList.remove('hidden');
                 } catch(e) {
