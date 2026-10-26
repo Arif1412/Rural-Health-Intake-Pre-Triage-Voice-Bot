@@ -1,6 +1,6 @@
 import os
 import requests
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 import uvicorn
 
@@ -20,14 +20,16 @@ VOICE_MAP = {
     "en-IN": "Nalini"    # English (Indian Accent)
 }
 
-# 1. STT Function (Prisma v2.5 Auto-Detect)
-def transcribe_audio_file(file_path):
+# 1. STT Function (Prisma v2.5 with required language_code)
+def transcribe_audio_file(file_path, language_code="hi-IN"):
     if not API_KEY:
         return "API Key not configured."
     url = f"{BASE_URL}/stt/v3"
     with open(file_path, "rb") as audio_file:
         files_payload = {"audio_file": (file_path, audio_file)}
         data_payload = {
+            "language_code": language_code,
+            "preferred_language": language_code,
             "format": "transcribe",
             "itn_native_numerals": "true"
         }
@@ -37,27 +39,12 @@ def transcribe_audio_file(file_path):
         return result.get("transcript") or result.get("text") or str(result)
     return f"STT Error: {response.text}"
 
-# 2. Fully Localized Multilingual Triage & Solutions Engine with Auto-Detection
-def evaluate_symptoms_and_solutions(transcript):
+# 2. Fully Localized Multilingual Triage & Solutions Engine
+def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
     if not transcript or "Error" in transcript:
-        return "UNKNOWN", "en-IN", "विवरण नहीं मिला / Details not found.", []
+        return "UNKNOWN", "विवरण नहीं मिला / Details not found.", []
     
     t_lower = transcript.lower()
-
-    # Detect language based on Unicode script or specific regional keywords
-    if any('\u0980' <= c <= '\u09FF' for c in transcript) or any(w in t_lower for w in ["বুক", "চোখ", "জ্বর", "পায়খানা"]):
-        lang_code = "bn-IN"
-    elif any('\u0B80' <= c <= '\u0BFF' for c in transcript):
-        lang_code = "ta-IN"
-    elif any('\u0C00' <= c <= '\u0C7F' for c in transcript):
-        lang_code = "te-IN"
-    elif any('\u0900' <= c <= '\u097F' for c in transcript):
-        if any(w in t_lower for w in ["दुखणे", "पाय", "डोळा"]):
-            lang_code = "mr-IN"
-        else:
-            lang_code = "hi-IN"
-    else:
-        lang_code = "en-IN"
 
     # Multilingual Keyword Arrays
     red_keywords = [
@@ -101,19 +88,19 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 1. RED (Emergency) ----
     if any(w in t_lower for w in red_keywords):
         tier = "RED (Emergency)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "সতর্কতা: মারাত্মক লক্ষণ দেখা গেছে। অবিলম্বে নিকটস্থ হাসপাতালে যান।"
             solutions = ["অবিলম্বে ১০৮ এ্যাম্বুলেন্সে কল করুন।", "রোগীকে শান্ত রাখুন এবং সোজা বসিয়ে রাখুন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "எச்சரிக்கை: தீவிர அறிகுறிகள் கண்டறியப்பட்டுள்ளன. உடனடியாக அருகில் உள்ள மருத்துவமனைக்குச் செல்லவும்."
             solutions = ["உடனடியாக 108 அவசர ஊர்தியை அழைக்கவும்.", "நோயாளி அமைதியாக நிமிர்ந்து அமர்ந்திருக்கச் செய்யவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "హెచ్చరిక: తీవ్రమైన లక్షణాలు గుర్తించబడ్డాయి. వెంటనే సమీప ఆసుపత్రికి వెళ్లండి."
             solutions = ["వెంటనే 108 అంబులెన్స్‌కు కాల్ చేయండి.", "రోగిని ప్రశాంతంగా నిటారుగా కూర్చోబెట్టండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "चेतावणी: गंभीर लक्षणे आढळली आहेत. त्वरित जवळच्या रुग्णालयात जा."
             solutions = ["त्वरित १०८ रुग्णवाहिकेला कॉल करा.", "रुग्णाला शांत ठेवा आणि सरळ बसवा."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "Warning: Severe symptoms detected. Please proceed to the nearest emergency hospital immediately."
             solutions = ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."]
         else: # Hindi
@@ -123,19 +110,19 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 2. YELLOW (Moderate - Eye) ----
     elif any(w in t_lower for w in eye_keywords):
         tier = "YELLOW (Moderate - Eye)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "আপনার চোখে সমস্যা বা ব্যথা রয়েছে। চোখ ঘষবেন না এবং চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"
             solutions = ["পরিষ্কার জল দিয়ে চোখ ধুয়ে নিন।", "চোখ ঘষা থেকে বিরত থাকুন।", "২৪ ঘণ্টার মধ্যে চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "உங்கள் கண்ணில் வலி அல்லது பிரச்சினை உள்ளது. கண்களை கசக்க வேண்டாம் மற்றும் கண் மருத்துவரை அணுகவும்."
             solutions = ["சுத்தமான நீரால் கண்களை மென்மையாக கழுவவும்.", "கண்களை கசக்குவதை தவிர்க்கவும்.", "24 மணி நேரத்திற்குள் கண் மருத்துவரை அணுகவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "మీ కంటిలో నొప్పి లేదా సమస్య ఉంది. కళ్ళను రుద్దకండి మరియు నేత్ర వైద్యుడిని సంప్రదించండి."
             solutions = ["శుభ్రమైన నీటితో కళ్ళను సున్నితంగా కడగండి.", "కళ్ళు రుద్దడం మానుకోండి.", "24 గంటలలోపు నేత్ర వైద్యుడిని సంప్రదించండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "तुमच्या डोळ्यात दुखत आहे किंवा समस्या आहे. डोळे चोळू नका आणि नेत्रतज्ज्ञांचा सल्ला घ्या."
             solutions = ["स्वच्छ पाण्याने डोळे हलके धुवा.", "डोळे चोळणे टाळा.", "२४ तासांच्या आत नेत्रतज्ज्ञांचा सल्ला घ्या."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "You have an eye issue or pain. Avoid touching your eye and consult an ophthalmologist promptly."
             solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
         else: # Hindi
@@ -145,19 +132,19 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 3. YELLOW (Moderate - Arm/Hand) ----
     elif any(w in t_lower for w in arm_keywords):
         tier = "YELLOW (Moderate - Arm/Hand)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "আপনার হাতে ব্যথা রয়েছে। হাতটিকে বিশ্রামে রাখুন এবং ভারী কিছু তুলবেন না।"
             solutions = ["আক্রান্ত হাতটিকে বিশ্রামে রাখুন।", "ভারী জিনিস তোলা থেকে বিরত থাকুন।", "ব্যথা স্থায়ী হলে চিকিৎসকের পরামর্শ নিন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "உங்கள் கையில் வலி உள்ளது. கையை ஓய்வெடுக்க அனுமதிக்கவும் மற்றும் கனமான பொருட்களை தூக்குவதை தவிர்க்கவும்."
             solutions = ["பாதிக்கப்பட்ட கையை ஓய்வெடுக்கச் செய்யவும்.", "கனமான பொருட்களைத் தூக்குவதைத் தவிர்க்கவும்.", "வலி நீடித்தால் மருத்துவரை அணுகவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "మీ చేతిలో నొప్పి ఉంది. చేతికి విశ్రాంతి ఇవ్వండి మరియు బరుైన వస్తువులను ఎత్తకండి."
             solutions = ["ప్రభావిత చేతికి విశ్రాంతి ఇవ్వండి.", "బరువైన వస్తువులను ఎత్తడం మానుకోండి.", "నొప్పి తగ్గకపోతే వైద్యుడిని సంప్రదించండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "तुमच्या हातात दुखत आहे. हाताला विश्रांती द्या आणि जड वस्तू उचलू नका."
             solutions = ["प्रभावित हाताला विश्रांती द्या.", "जड वस्तू उचलणे टाळा.", "वेदना कायम राहिल्यास डॉक्टरांचा सल्ला घ्या."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "You have reported pain in your arm or hand. Rest the affected limb and avoid heavy lifting."
             solutions = ["Rest the affected arm.", "Avoid lifting heavy objects.", "Consult a doctor if pain persists."]
         else: # Hindi
@@ -167,19 +154,19 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 4. YELLOW (Moderate - Headache) ----
     elif any(w in t_lower for w in headache_keywords):
         tier = "YELLOW (Moderate - Headache)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "আপনার মাথা ব্যথার সমস্যা রয়েছে। একটি শান্ত ও অন্ধকার ঘরে বিশ্রাম নিন।"
             solutions = ["কপালে ঠান্ডা সেঁক দিন।", "পর্যাপ্ত জল পান করুন।", "ব্যথা না কমলে ডাক্তারের সাথে যোগাযোগ করুন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "உங்களுக்கு தலைவலி உள்ளது. அமைதியான, இருண்ட அறையில் ஓய்வெடுக்கவும் மற்றும் நீர் அருந்தவும்."
             solutions = ["நெற்றியில் குளிர்ந்த ஒத்தடம் கொடுக்கவும்.", "போதுமான நீர் அருந்தவும்.", "தலைவலி நீடித்தால் மருத்துவரை அணுகவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "మీకు తలనొప్పి ఉంది. ప్రశాంతమైన, చీకటి గదిలో విశ్రాంతి తీసుకోండి మరియు నీరు త్రాగండి."
             solutions = ["నుదుటిపై చల్లని కాపడం పెట్టండి.", "తగినంత నీరు త్రాగండి.", "తలనొప్పి తగ్గకపోతే వైద్యుడిని సంప్రదించండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "तुम्हाला डोकेदुखीचा त्रास होत आहे. शांत, अंधाऱ्या खोलीत विश्रांती घ्या आणि हायड्रेटेड राहा."
             solutions = ["कपाळावर थंड पट्टी ठेवा.", "भरपूर पाणी प्या.", "डोकेदुखी न थांबल्यास डॉक्टरांचा सल्ला घ्या."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "You are experiencing a headache. Rest in a quiet, dark room and stay hydrated."
             solutions = ["Apply a cold compress on your forehead.", "Stay hydrated.", "Consult a doctor if headache persists."]
         else: # Hindi
@@ -189,19 +176,19 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 5. YELLOW (Moderate - Leg Pain) ----
     elif any(w in t_lower for w in leg_keywords):
         tier = "YELLOW (Moderate - Leg Pain)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "আপনার পায়ে ব্যথা রয়েছে। পা সামান্য উঁচুতে রেখে বিশ্রাম নিন।"
             solutions = ["আক্রান্ত পা উঁচুতে রেখে বিশ্রাম নিন।", "ফোলা থাকলে বরফ দিন।", "ব্যথা অব্যাহত থাকলে চিকিৎসকের পরামর্শ নিন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "உங்களுக்கு கால் வலி உள்ளது. கால்களை உயரமாக வைத்து ஓய்வெடுக்கவும்."
             solutions = ["பாதிக்கப்பட்ட காலை உயரமாக வைக்கவும்.", "வீக்கம் இருந்தால் ஐஸ் பேக் வைக்கவும்.", "வலி தொடர்ந்தால் மருத்துவரை அணுகவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "మీకు కాలు నొప్పి ఉంది. కాలు కొద్దిగా పైకి పెట్టి విశ్రాంతి తీసుకోండి."
             solutions = ["ప్రభావిత కాలును పైకి ఉంచి విశ్రాంతి ఇవ్వండి.", "వాపు ఉంటే ఐస్ ప్యాక్ పెట్టండి.", "నొప్పి కొనసాగితే వైద్యుడిని సంప్రదించండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "तुमच्या पायात दुखत आहे. पाय थोडे वर करून विश्रांती घ्या."
             solutions = ["प्रभावित पाय वर करून विश्रांती द्या.", "सूज असल्यास बर्फ लावा.", "वेदना सुरूच राहिल्यास डॉक्टरांचा सल्ला घ्या."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "You have leg pain. Rest with your leg elevated and apply an ice pack if swollen."
             solutions = ["Rest the affected leg.", "Apply ice pack if there is swelling.", "Consult a physician if pain continues."]
         else: # Hindi
@@ -211,19 +198,19 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 6. YELLOW (Moderate - Fever) ----
     elif any(w in t_lower for w in fever_keywords):
         tier = "YELLOW (Moderate - Fever)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "আপনার লক্ষণ অনুযায়ী জ্বর রয়েছে। পর্যাপ্ত জল বা ওআরএস পান করুন।"
             solutions = ["প্রতি ৪-৬ ঘণ্টা পর পর তাপমাত্রা মাপুন।", "ওআরএস বা জল খেয়ে হাইড্রেটেড থাকুন।", "২৪ ঘণ্টার মধ্যে চিকিৎসকের পরামর্শ নিন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "உங்கள் அறிகுறிகளின்படி உங்களுக்கு காய்ச்சல் உள்ளது. ஓஆர்எஸ் மற்றும் நீர் அருந்தி ஓய்வெடுக்கவும்."
             solutions = ["ஒவ்வொரு 4-6 மணி நேரத்திற்கும் உடல் வெப்பநிலையை அளவிடவும்.", "ஓஆர்எஸ் அல்லது நீர் அருந்தி உடலை நீரேற்றமாக வைத்திருக்கவும்.", "24 மணி நேரத்திற்குள் மருத்துவரை அணுகவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "మీ లక్షణాల ప్రకారం మీకు జ్వరం ఉంది. తగినంత నీరు లేదా ఓఆర్ఎస్ త్రాగండి."
             solutions = ["ప్రతి 4-6 గంటలకు ఒకసారి శరీర ఉష్ణోగ్రతను తనిఖీ చేయండి.", "ORS లేదా నీరు త్రాగి హైడ్రేటెడ్ గా ఉండండి.", "24 గంటలలోపు వైద్యుడిని సంప్రదించండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "तुमच्या लक्षणांनुसार तुम्हाला ताप आहे. भरपूर पाणी किंवा ओआरएस प्या आणि विश्रांती घ्या."
             solutions = ["दर ४-६ तासांनी शरीराचे तापमान तपासा.", "ओआरएस किंवा पाणी प्या.", "२४ तासांच्या आत डॉक्टरांचा सल्ला घ्या."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "According to your symptoms, you have a fever. Stay hydrated with ORS and rest."
             solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
         else: # Hindi
@@ -233,19 +220,19 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 7. YELLOW (Moderate - Stomach) ----
     elif any(w in t_lower for w in stomach_keywords):
         tier = "YELLOW (Moderate - Stomach)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "পেটের সমস্যার জন্য হালকা ও তাজা খাবার খান এবং ওআরএস পান করুন।"
             solutions = ["খিচুড়ির মতো হালকা খাবার খান।", "ঝাল বা তেলযুক্ত খাবার এড়িয়ে চলুন।", "পর্যাপ্ত জল ও ওআরএস পান করুন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "வயிறு தொந்தரவுக்கு எளிதில் செரிமானமாகும் உணவை உட்கொள்ளவும் மற்றும் ஓஆர்எஸ் குடிக்கவும்."
             solutions = ["கஞ்சி அல்லது எளிமையான உணவுகளை உண்ணவும்.", "காரமான மற்றும் எண்ணெய் உணவுகளை தவிர்க்கவும்.", "ஓஆர்எஸ் மற்றும் நீர் அருந்தவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "కడుపు సమస్య కోసం తేలికపాటి ఆహారం తీసుకోండి మరియు ఓఆర్ఎస్ త్రాగండి."
             solutions = ["ఖిచ్డీ వంటి తేలికపాటి ఆహారం తినండి.", "కారంగా లేదా నూనెతో కూడిన ఆహారాన్ని నివారించండి.", "ORS మరియు నీరు త్రాగండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "पोटाच्या समस्येसाठी हलके अन्न खा आणि ओआरएसचे सेवन करा."
             solutions = ["खिचडीसारखे हलके अन्न खा.", "तिखट किंवा तेलकट पदार्थ टाळा.", "भरपूर पाणी आणि ओआरएस प्या."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "For stomach discomfort, consume light foods and maintain strict hydration with ORS."
             solutions = ["Consume light foods like khichdi.", "Avoid spicy or oily food.", "Maintain strict hydration."]
         else: # Hindi
@@ -255,26 +242,26 @@ def evaluate_symptoms_and_solutions(transcript):
     # ---- 8. GREEN (Mild) ----
     else:
         tier = "GREEN (Mild)"
-        if lang_code == "bn-IN":
+        if language_code == "bn-IN":
             advice = "আপনার লক্ষণগুলি সাধারণ বলে মনে হচ্ছে। পর্যাপ্ত বিশ্রাম নিন।"
             solutions = ["১-২ দিন পর্যাপ্ত বিশ্রাম নিন।", "পর্যাপ্ত জল পান করুন।"]
-        elif lang_code == "ta-IN":
+        elif language_code == "ta-IN":
             advice = "உங்கள் அறிகுறிகள் சாதாரணமானவை போல் தெரிகிறது. போதுமான ஓய்வெடுக்கவும்."
             solutions = ["1-2 நாட்கள் போதுமான ஓய்வு எடுக்கவும்.", "சரியான அளவில் தண்ணீர் குடிக்கவும்."]
-        elif lang_code == "te-IN":
+        elif language_code == "te-IN":
             advice = "మీ లక్షణాలు సాధారణంగా కనిపిస్తున్నాయి. తగినంత విశ్రాంతి తీసుకోండి."
             solutions = ["1-2 రోజులు తగినంత విశ్రాంతి తీసుకోండి.", "తగినంత నీరు త్రాగండి."]
-        elif lang_code == "mr-IN":
+        elif language_code == "mr-IN":
             advice = "तुमची लक्षणे सामान्य दिसत आहेत. पुरेशी विश्रांती घ्या."
             solutions = ["१-२ दिवस पुरेशी विश्रांती घ्या.", "योग्य प्रमाणात पाणी प्या."]
-        elif lang_code == "en-IN":
+        elif language_code == "en-IN":
             advice = "Your symptoms appear mild. Get adequate rest and monitor your health."
             solutions = ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
         else: # Hindi
             advice = "आपके लक्षण सामान्य प्रतीत होते हैं। पर्याप्त विश्राम करें।"
             solutions = ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
 
-    return tier, lang_code, advice, solutions
+    return tier, advice, solutions
 
 # 3. TTS Function (Timbre v2.5)
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
@@ -296,14 +283,14 @@ def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"
 
 # API Endpoints
 @app.post("/api/analyze")
-async def analyze_audio(file: UploadFile = File(...)):
+async def analyze_audio(file: UploadFile = File(...), language: str = Form("hi-IN")):
     temp_filename = f"temp_{file.filename}"
     with open(temp_filename, "wb") as buffer:
         buffer.write(await file.read())
         
-    transcript = transcribe_audio_file(temp_filename)
-    triage_level, detected_lang, advice, solutions = evaluate_symptoms_and_solutions(transcript)
-    audio_output_path = synthesize_voice(advice, language_code=detected_lang)
+    transcript = transcribe_audio_file(temp_filename, language_code=language)
+    triage_level, advice, solutions = evaluate_symptoms_and_solutions(transcript, language_code=language)
+    audio_output_path = synthesize_voice(advice, language_code=language)
     
     if os.path.exists(temp_filename):
         os.remove(temp_filename)
@@ -311,7 +298,6 @@ async def analyze_audio(file: UploadFile = File(...)):
     return JSONResponse({
         "transcript": transcript or "Transcription failed",
         "triage_level": triage_level,
-        "detected_language": detected_lang,
         "advice": advice,
         "solutions": solutions,
         "audio_url": "/api/audio" if audio_output_path else ""
@@ -323,7 +309,7 @@ async def get_audio():
         return FileResponse("response.wav", media_type="audio/wav")
     return JSONResponse({"error": "Audio not found"}, status_code=404)
 
-# Frontend Dashboard with Architecture & About Sections Restored
+# Frontend Dashboard with Glassy Navigation Bar, Selector Dropdown & Architecture Sections
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     return """
@@ -332,7 +318,7 @@ async def serve_frontend():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AarogyaVoice — Sovereign AI Pre-Triage Assistant</title>
+        <title>AarogyaVoice — Multi-Indic Sovereign AI Pre-Triage Assistant</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -344,8 +330,8 @@ async def serve_frontend():
     </head>
     <body class="text-neutral-200 min-h-screen flex flex-col items-center selection:bg-neutral-800 selection:text-white">
 
-        <!-- Top Navigation Bar -->
-        <nav class="w-full max-w-5xl px-6 py-4 mt-4 flex items-center justify-between border border-neutral-800/80 bg-neutral-950/80 backdrop-blur-md rounded-2xl sticky top-4 z-50 shadow-lg transition-all duration-300">
+        <!-- Top Navigation Bar with Glassy Effect -->
+        <nav class="w-full max-w-5xl px-6 py-4 mt-4 flex items-center justify-between border border-neutral-700/50 bg-neutral-950/40 backdrop-blur-xl rounded-2xl sticky top-4 z-50 shadow-2xl transition-all duration-300">
             <a href="#top" class="flex items-center space-x-3 group cursor-pointer">
                 <span class="bg-neutral-900 border border-neutral-800 text-white font-bold text-xs px-2.5 py-1 rounded-md tracking-wide uppercase group-hover:border-neutral-500 group-hover:bg-neutral-800 transition-all duration-300">AV</span>
                 <span class="font-bold text-white text-base tracking-tight group-hover:text-neutral-300 transition-colors duration-300">AarogyaVoice</span>
@@ -368,21 +354,21 @@ async def serve_frontend():
                     <div>
                         <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-emerald-400 text-xs font-medium mb-6">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>Sovereign AI Active</span>
+                            <span>Multi-Indic Sovereign Voice AI Active</span>
                         </div>
                         <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers (ASHA/ANM) across India to capture patient speech, automatically detecting regional dialects, processing clinical pre-triage assessment and returning instant spoken guidance.
+                            AarogyaVoice empowers community health workers (ASHA/ANM) across India to capture patient speech in 6 major Indic dialects, process clinical pre-triage assessment and return instant spoken guidance.
                         </p>
                     </div>
 
                     <div class="mt-8 pt-6 border-t border-neutral-800/80 flex flex-wrap gap-2">
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Prisma v2.5 STT</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Timbre v2.5 TTS</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Auto-Language Detect</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">FastAPI</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Prisma v2.5 STT</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Timbre v2.5 TTS</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">6 Indic Languages</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">FastAPI</span>
                     </div>
                 </div>
 
@@ -395,25 +381,36 @@ async def serve_frontend():
 <span class="text-purple-400">const</span> <span class="text-blue-400">AarogyaVoice</span> = {
   <span class="text-neutral-500">model_stt</span>: <span class="text-emerald-300">"Prisma v2.5"</span>,
   <span class="text-neutral-500">model_tts</span>: <span class="text-emerald-300">"Timbre v2.5"</span>,
-  <span class="text-neutral-500">language_mode</span>: <span class="text-amber-300">"Auto-Detect"</span>,
-  <span class="text-neutral-500">triage_tiers</span>: [<span class="text-red-400">"RED"</span>, <span class="text-amber-400">"YELLOW"</span>, <span class="text-emerald-400">"GREEN"</span>],
-  <span class="text-neutral-500">target_users</span>: <span class="text-emerald-300">"ASHA / ANM Workers"</span>
+  <span class="text-neutral-500">languages</span>: [<span class="text-amber-300">"Hindi, Bengali, Tamil"</span>, <span class="text-amber-300">"Telugu, Marathi, English"</span>],
+  <span class="text-neutral-500">triage_tiers</span>: [<span class="text-red-400">"RED"</span>, <span class="text-amber-400">"YELLOW"</span>, <span class="text-emerald-400">"GREEN"</span>]
 };</pre>
                     <div class="pt-3 border-t border-neutral-800/80 text-[11px] text-neutral-500 flex justify-between">
                         <span>Status: 200 OK</span>
-                        <span>Latency: &lt; 680ms</span>
+                        <span>Multi-Dialect Ready</span>
                     </div>
                 </div>
             </section>
 
             <!-- Voice Intake Console Section -->
             <section id="intake" class="bg-neutral-900/30 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 rounded-2xl p-8 shadow-xl">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Clinical Voice Intake Console</h2>
-                        <p class="text-xs text-neutral-400 mt-1">Upload patient audio recording (.wav or .mp3) for automatic dialect recognition & analysis</p>
+                        <p class="text-xs text-neutral-400 mt-1">Select language dialect and upload patient audio recording (.wav, .mp3)</p>
                     </div>
-                    <span class="bg-neutral-900 text-neutral-400 border border-neutral-800 text-xs px-3 py-1 rounded-lg font-mono-code">Auto-Detect</span>
+
+                    <!-- Language Selection Dropdown -->
+                    <div class="flex items-center space-x-3">
+                        <label for="languageSelect" class="text-xs font-mono-code text-neutral-400">Dialect:</label>
+                        <select id="languageSelect" class="bg-neutral-900 text-white border border-neutral-700 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500 font-mono-code">
+                            <option value="hi-IN" selected>🇮🇳 Hindi (हिन्दी)</option>
+                            <option value="bn-IN">🇮🇳 Bengali (বাংলা)</option>
+                            <option value="ta-IN">🇮🇳 Tamil (தமிழ்)</option>
+                            <option value="te-IN">🇮🇳 Telugu (తెలుగు)</option>
+                            <option value="mr-IN">🇮🇳 Marathi (मराठी)</option>
+                            <option value="en-IN">🌐 English (Indian Accent)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Dropzone Card -->
@@ -446,18 +443,15 @@ async def serve_frontend():
                 <!-- Loading Spinner -->
                 <div id="loader" class="hidden text-center my-8">
                     <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Detecting language, transcribing & synthesizing regional voice response...</p>
+                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Transcribing speech & synthesizing regional voice response...</p>
                 </div>
 
                 <!-- Results Output Grid -->
                 <div id="results" class="hidden mt-10 space-y-6 pt-6 border-t border-neutral-800">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
-                            <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Triage & Detected Language</span>
-                            <div class="flex items-center space-x-3">
-                                <div id="triageBadge" class="px-3 py-1.5 rounded-lg font-bold text-xs"></div>
-                                <span id="langBadge" class="bg-neutral-900 border border-neutral-800 text-neutral-300 font-mono-code text-xs px-2.5 py-1 rounded-md"></span>
-                            </div>
+                            <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Triage Urgency Assessment</span>
+                            <div id="triageBadge" class="inline-block px-3 py-1.5 rounded-lg font-bold text-xs"></div>
                         </div>
 
                         <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
@@ -552,8 +546,11 @@ async def serve_frontend():
 
             async function analyzeAudio() {
                 if(!selectedFile) return alert("Please select an audio file first!");
+                const lang = document.getElementById('languageSelect').value;
+
                 const formData = new FormData();
                 formData.append("file", selectedFile);
+                formData.append("language", lang);
 
                 document.getElementById('loader').classList.remove('hidden');
                 document.getElementById('results').classList.add('hidden');
@@ -563,8 +560,6 @@ async def serve_frontend():
                     const result = await res.json();
 
                     document.getElementById('transcriptBox').innerText = result.transcript;
-                    document.getElementById('langBadge').innerText = `Lang: ${result.detected_language}`;
-                    
                     const badge = document.getElementById('triageBadge');
                     badge.innerText = result.triage_level;
                     if(result.triage_level.includes("RED")) {
