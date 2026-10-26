@@ -20,7 +20,7 @@ VOICE_MAP = {
     "en-IN": "Nalini"    # English (Indian Accent)
 }
 
-# 1. STT Function (Prisma v2.5 with required language_code)
+# 1. STT Function (Prisma v2.5)
 def transcribe_audio_file(file_path, language_code="hi-IN"):
     if not API_KEY:
         return "API Key not configured."
@@ -39,17 +39,17 @@ def transcribe_audio_file(file_path, language_code="hi-IN"):
         return result.get("transcript") or result.get("text") or str(result)
     return f"STT Error: {response.text}"
 
-# 2. Fully Localized Multilingual Triage & Solutions Engine
+# 2. Fully Localized Multilingual Triage & Solutions Engine (Expanded Bengali Support)
 def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
     if not transcript or "Error" in transcript:
         return "UNKNOWN", "विवरण नहीं मिला / Details not found.", []
     
     t_lower = transcript.lower()
 
-    # Multilingual Keyword Arrays
+    # Multilingual Keyword Arrays (Expanded with variations like पेটে ব্যথা / পেটে ব্যাথা)
     red_keywords = [
         "chest pain", "breathlessness", "unconscious", "saans", "छाती में दर्द", "सांस फूलना",
-        "বুক ব্যথা", "বুকে ব্যথা", "শ্বাসকষ্ট", "অজ্ঞান",
+        "বুক ব্যথা", "বুকে ব্যথা", "বুকের ব্যাথা", "শ্বাসকষ্ট", "অজ্ঞান",
         "மார்பக வலி", "மூச்சு திணறல்", "மயக்கம்",
         "ఛాతీ నొప్పి", "శ్వాస తీసుకోవడంలో ఇబ్బంది", "స్పృహ కోల్పోవడం",
         "छातीत दुखणे", "श्वास घेण्यास त्रास", "बेसुध"
@@ -66,22 +66,22 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
     ]
 
     headache_keywords = [
-        "sir dard", "headache", "sar dard", "सर दर्द", "सिर में दर्द", "মাথা ব্যথা", "মাথাব্যথা",
+        "sir dard", "headache", "sar dard", "सर दर्द", "सिर में दर्द", "মাথা ব্যথা", "মাথাব্যথা", "মাথা ধরা",
         "தலைவலி", "తలనొప్పి", "डोकेदुखी"
     ]
 
     leg_keywords = [
-        "पैर में दर्द", "leg pain", "foot pain", "घुटना", "পা ব্যথা", "পায়ে ব্যথা",
+        "প্যার মে दर्द", "leg pain", "foot pain", "घुटना", "পা ব্যথা", "পায়ে ব্যথা",
         "கால் வலி", "ಕಾಲು ನೋವು", "కాలు నొప్పి", "पाय दुखणे"
     ]
 
     fever_keywords = [
-        "bukhar", "fever", "बुखार", "ज্বর", "গা গরম",
+        "bukhar", "fever", "बुखार", "ज্বর", "গা গরম", "গরম",
         "காய்ச்சல்", "జ్వరం", "ताप"
     ]
 
     stomach_keywords = [
-        "pet", "stomach", "vomit", "ulti", "पेट", "दस्त", "পেট ব্যথা", "বমি", "পাতলা পায়খানা",
+        "pet", "stomach", "vomit", "ulti", "पेट", "दस्त", "পেট", "পেটে ব্যথা", "পেটে ব্যাথা", "বমি", "পাতলা পায়খানা", "ব্যথা করছে",
         "வயிறு வலி", "வாந்தி", "కడుపు నొప్పి", "వాంతి", "पोटदुखी", "उल्टी"
     ]
 
@@ -103,121 +103,11 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
         elif language_code == "en-IN":
             advice = "Warning: Severe symptoms detected. Please proceed to the nearest emergency hospital immediately."
             solutions = ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."]
-        else: # Hindi
+        else:
             advice = "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं।"
             solutions = ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."]
 
-    # ---- 2. YELLOW (Moderate - Eye) ----
-    elif any(w in t_lower for w in eye_keywords):
-        tier = "YELLOW (Moderate - Eye)"
-        if language_code == "bn-IN":
-            advice = "আপনার চোখে সমস্যা বা ব্যথা রয়েছে। চোখ ঘষবেন না এবং চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"
-            solutions = ["পরিষ্কার জল দিয়ে চোখ ধুয়ে নিন।", "চোখ ঘষা থেকে বিরত থাকুন।", "২৪ ঘণ্টার মধ্যে চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"]
-        elif language_code == "ta-IN":
-            advice = "உங்கள் கண்ணில் வலி அல்லது பிரச்சினை உள்ளது. கண்களை கசக்க வேண்டாம் மற்றும் கண் மருத்துவரை அணுகவும்."
-            solutions = ["சுத்தமான நீரால் கண்களை மென்மையாக கழுவவும்.", "கண்களை கசக்குவதை தவிர்க்கவும்.", "24 மணி நேரத்திற்குள் கண் மருத்துவரை அணுகவும்."]
-        elif language_code == "te-IN":
-            advice = "మీ కంటిలో నొప్పి లేదా సమస్య ఉంది. కళ్ళను రుద్దకండి మరియు నేత్ర వైద్యుడిని సంప్రదించండి."
-            solutions = ["శుభ్రమైన నీటితో కళ్ళను సున్నితంగా కడగండి.", "కళ్ళు రుద్దడం మానుకోండి.", "24 గంటలలోపు నేత్ర వైద్యుడిని సంప్రదించండి."]
-        elif language_code == "mr-IN":
-            advice = "तुमच्या डोळ्यात दुखत आहे किंवा समस्या आहे. डोळे चोळू नका आणि नेत्रतज्ज्ञांचा सल्ला घ्या."
-            solutions = ["स्वच्छ पाण्याने डोळे हलके धुवा.", "डोळे चोळणे टाळा.", "२४ तासांच्या आत नेत्रतज्ज्ञांचा सल्ला घ्या."]
-        elif language_code == "en-IN":
-            advice = "You have an eye issue or pain. Avoid touching your eye and consult an ophthalmologist promptly."
-            solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
-        else: # Hindi
-            advice = "आपको आँख में दर्द या समस्या है। अपनी आँख को बार-बार न छुएं और तुरंत नेत्र विशेषज्ञ से मिलें।"
-            solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
-
-    # ---- 3. YELLOW (Moderate - Arm/Hand) ----
-    elif any(w in t_lower for w in arm_keywords):
-        tier = "YELLOW (Moderate - Arm/Hand)"
-        if language_code == "bn-IN":
-            advice = "আপনার হাতে ব্যথা রয়েছে। হাতটিকে বিশ্রামে রাখুন এবং ভারী কিছু তুলবেন না।"
-            solutions = ["আক্রান্ত হাতটিকে বিশ্রামে রাখুন।", "ভারী জিনিস তোলা থেকে বিরত থাকুন।", "ব্যথা স্থায়ী হলে চিকিৎসকের পরামর্শ নিন।"]
-        elif language_code == "ta-IN":
-            advice = "உங்கள் கையில் வலி உள்ளது. கையை ஓய்வெடுக்க அனுமதிக்கவும் மற்றும் கனமான பொருட்களை தூக்குவதை தவிர்க்கவும்."
-            solutions = ["பாதிக்கப்பட்ட கையை ஓய்வெடுக்கச் செய்யவும்.", "கனமான பொருட்களைத் தூக்குவதைத் தவிர்க்கவும்.", "வலி நீடித்தால் மருத்துவரை அணுகவும்."]
-        elif language_code == "te-IN":
-            advice = "మీ చేతిలో నొప్పి ఉంది. చేతికి విశ్రాంతి ఇవ్వండి మరియు బరుైన వస్తువులను ఎత్తకండి."
-            solutions = ["ప్రభావిత చేతికి విశ్రాంతి ఇవ్వండి.", "బరువైన వస్తువులను ఎత్తడం మానుకోండి.", "నొప్పి తగ్గకపోతే వైద్యుడిని సంప్రదించండి."]
-        elif language_code == "mr-IN":
-            advice = "तुमच्या हातात दुखत आहे. हाताला विश्रांती द्या आणि जड वस्तू उचलू नका."
-            solutions = ["प्रभावित हाताला विश्रांती द्या.", "जड वस्तू उचलणे टाळा.", "वेदना कायम राहिल्यास डॉक्टरांचा सल्ला घ्या."]
-        elif language_code == "en-IN":
-            advice = "You have reported pain in your arm or hand. Rest the affected limb and avoid heavy lifting."
-            solutions = ["Rest the affected arm.", "Avoid lifting heavy objects.", "Consult a doctor if pain persists."]
-        else: # Hindi
-            advice = "आपको हाथ या बाजू में दर्द की शिकायत है। उस हाथ को आराम दें और ज्यादा वजन न उठाएं।"
-            solutions = ["Rest the affected arm.", "Avoid lifting heavy objects.", "Consult a doctor if pain persists."]
-
-    # ---- 4. YELLOW (Moderate - Headache) ----
-    elif any(w in t_lower for w in headache_keywords):
-        tier = "YELLOW (Moderate - Headache)"
-        if language_code == "bn-IN":
-            advice = "আপনার মাথা ব্যথার সমস্যা রয়েছে। একটি শান্ত ও অন্ধকার ঘরে বিশ্রাম নিন।"
-            solutions = ["কপালে ঠান্ডা সেঁক দিন।", "পর্যাপ্ত জল পান করুন।", "ব্যথা না কমলে ডাক্তারের সাথে যোগাযোগ করুন।"]
-        elif language_code == "ta-IN":
-            advice = "உங்களுக்கு தலைவலி உள்ளது. அமைதியான, இருண்ட அறையில் ஓய்வெடுக்கவும் மற்றும் நீர் அருந்தவும்."
-            solutions = ["நெற்றியில் குளிர்ந்த ஒத்தடம் கொடுக்கவும்.", "போதுமான நீர் அருந்தவும்.", "தலைவலி நீடித்தால் மருத்துவரை அணுகவும்."]
-        elif language_code == "te-IN":
-            advice = "మీకు తలనొప్పి ఉంది. ప్రశాంతమైన, చీకటి గదిలో విశ్రాంతి తీసుకోండి మరియు నీరు త్రాగండి."
-            solutions = ["నుదుటిపై చల్లని కాపడం పెట్టండి.", "తగినంత నీరు త్రాగండి.", "తలనొప్పి తగ్గకపోతే వైద్యుడిని సంప్రదించండి."]
-        elif language_code == "mr-IN":
-            advice = "तुम्हाला डोकेदुखीचा त्रास होत आहे. शांत, अंधाऱ्या खोलीत विश्रांती घ्या आणि हायड्रेटेड राहा."
-            solutions = ["कपाळावर थंड पट्टी ठेवा.", "भरपूर पाणी प्या.", "डोकेदुखी न थांबल्यास डॉक्टरांचा सल्ला घ्या."]
-        elif language_code == "en-IN":
-            advice = "You are experiencing a headache. Rest in a quiet, dark room and stay hydrated."
-            solutions = ["Apply a cold compress on your forehead.", "Stay hydrated.", "Consult a doctor if headache persists."]
-        else: # Hindi
-            advice = "आपको सिर दर्द की शिकायत है। शांत और अंधेरे कमरे में आराम करें और पानी पिएं।"
-            solutions = ["Apply a cold compress on your forehead.", "Stay hydrated.", "Consult a doctor if headache persists."]
-
-    # ---- 5. YELLOW (Moderate - Leg Pain) ----
-    elif any(w in t_lower for w in leg_keywords):
-        tier = "YELLOW (Moderate - Leg Pain)"
-        if language_code == "bn-IN":
-            advice = "আপনার পায়ে ব্যথা রয়েছে। পা সামান্য উঁচুতে রেখে বিশ্রাম নিন।"
-            solutions = ["আক্রান্ত পা উঁচুতে রেখে বিশ্রাম নিন।", "ফোলা থাকলে বরফ দিন।", "ব্যথা অব্যাহত থাকলে চিকিৎসকের পরামর্শ নিন।"]
-        elif language_code == "ta-IN":
-            advice = "உங்களுக்கு கால் வலி உள்ளது. கால்களை உயரமாக வைத்து ஓய்வெடுக்கவும்."
-            solutions = ["பாதிக்கப்பட்ட காலை உயரமாக வைக்கவும்.", "வீக்கம் இருந்தால் ஐஸ் பேக் வைக்கவும்.", "வலி தொடர்ந்தால் மருத்துவரை அணுகவும்."]
-        elif language_code == "te-IN":
-            advice = "మీకు కాలు నొప్పి ఉంది. కాలు కొద్దిగా పైకి పెట్టి విశ్రాంతి తీసుకోండి."
-            solutions = ["ప్రభావిత కాలును పైకి ఉంచి విశ్రాంతి ఇవ్వండి.", "వాపు ఉంటే ఐస్ ప్యాక్ పెట్టండి.", "నొప్పి కొనసాగితే వైద్యుడిని సంప్రదించండి."]
-        elif language_code == "mr-IN":
-            advice = "तुमच्या पायात दुखत आहे. पाय थोडे वर करून विश्रांती घ्या."
-            solutions = ["प्रभावित पाय वर करून विश्रांती द्या.", "सूज असल्यास बर्फ लावा.", "वेदना सुरूच राहिल्यास डॉक्टरांचा सल्ला घ्या."]
-        elif language_code == "en-IN":
-            advice = "You have leg pain. Rest with your leg elevated and apply an ice pack if swollen."
-            solutions = ["Rest the affected leg.", "Apply ice pack if there is swelling.", "Consult a physician if pain continues."]
-        else: # Hindi
-            advice = "आपको पैर में दर्द है। पैर को ऊंचा रखकर आराम करें और सूजन होने पर बर्फ लगाएं।"
-            solutions = ["Rest the affected leg.", "Apply ice pack if there is swelling.", "Consult a physician if pain continues."]
-
-    # ---- 6. YELLOW (Moderate - Fever) ----
-    elif any(w in t_lower for w in fever_keywords):
-        tier = "YELLOW (Moderate - Fever)"
-        if language_code == "bn-IN":
-            advice = "আপনার লক্ষণ অনুযায়ী জ্বর রয়েছে। পর্যাপ্ত জল বা ওআরএস পান করুন।"
-            solutions = ["প্রতি ৪-৬ ঘণ্টা পর পর তাপমাত্রা মাপুন।", "ওআরএস বা জল খেয়ে হাইড্রেটেড থাকুন।", "২৪ ঘণ্টার মধ্যে চিকিৎসকের পরামর্শ নিন।"]
-        elif language_code == "ta-IN":
-            advice = "உங்கள் அறிகுறிகளின்படி உங்களுக்கு காய்ச்சல் உள்ளது. ஓஆர்எஸ் மற்றும் நீர் அருந்தி ஓய்வெடுக்கவும்."
-            solutions = ["ஒவ்வொரு 4-6 மணி நேரத்திற்கும் உடல் வெப்பநிலையை அளவிடவும்.", "ஓஆர்எஸ் அல்லது நீர் அருந்தி உடலை நீரேற்றமாக வைத்திருக்கவும்.", "24 மணி நேரத்திற்குள் மருத்துவரை அணுகவும்."]
-        elif language_code == "te-IN":
-            advice = "మీ లక్షణాల ప్రకారం మీకు జ్వరం ఉంది. తగినంత నీరు లేదా ఓఆర్ఎస్ త్రాగండి."
-            solutions = ["ప్రతి 4-6 గంటలకు ఒకసారి శరీర ఉష్ణోగ్రతను తనిఖీ చేయండి.", "ORS లేదా నీరు త్రాగి హైడ్రేటెడ్ గా ఉండండి.", "24 గంటలలోపు వైద్యుడిని సంప్రదించండి."]
-        elif language_code == "mr-IN":
-            advice = "तुमच्या लक्षणांनुसार तुम्हाला ताप आहे. भरपूर पाणी किंवा ओआरएस प्या आणि विश्रांती घ्या."
-            solutions = ["दर ४-६ तासांनी शरीराचे तापमान तपासा.", "ओआरएस किंवा पाणी प्या.", "२४ तासांच्या आत डॉक्टरांचा सल्ला घ्या."]
-        elif language_code == "en-IN":
-            advice = "According to your symptoms, you have a fever. Stay hydrated with ORS and rest."
-            solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
-        else: # Hindi
-            advice = "आपके लक्षणों के अनुसार आपको बुखार है। ओआरएस का घोल पिएं और आराम करें।"
-            solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
-
-    # ---- 7. YELLOW (Moderate - Stomach) ----
+    # ---- 2. YELLOW (Moderate - Stomach / पेट / পেটে ব্যথা) ----
     elif any(w in t_lower for w in stomach_keywords):
         tier = "YELLOW (Moderate - Stomach)"
         if language_code == "bn-IN":
@@ -235,35 +125,52 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
         elif language_code == "en-IN":
             advice = "For stomach discomfort, consume light foods and maintain strict hydration with ORS."
             solutions = ["Consume light foods like khichdi.", "Avoid spicy or oily food.", "Maintain strict hydration."]
-        else: # Hindi
+        else:
             advice = "पेट की समस्या के लिए हल्का भोजन लें और ओआरएस का घोल पिएं।"
             solutions = ["Consume light foods like khichdi.", "Avoid spicy or oily food.", "Maintain strict hydration."]
 
-    # ---- 8. GREEN (Mild) ----
+    # ---- 3. YELLOW (Moderate - Eye) ----
+    elif any(w in t_lower for w in eye_keywords):
+        tier = "YELLOW (Moderate - Eye)"
+        if language_code == "bn-IN":
+            advice = "আপনার চোখে সমস্যা বা ব্যথা রয়েছে। চোখ ঘষবেন না এবং চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"
+            solutions = ["পরিষ্কার জল দিয়ে চোখ ধুয়ে নিন।", "চোখ ঘষা থেকে বিরত থাকুন।", "২৪ ঘণ্টার মধ্যে চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"]
+        elif language_code == "en-IN":
+            advice = "You have an eye issue or pain. Avoid touching your eye and consult an ophthalmologist promptly."
+            solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
+        else:
+            advice = "आपको आँख में दर्द या समस्या है। अपनी आँख को बार-बार न छुएं और तुरंत नेत्र विशेषज्ञ से मिलें।"
+            solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
+
+    # ---- 4. YELLOW (Moderate - Fever) ----
+    elif any(w in t_lower for w in fever_keywords):
+        tier = "YELLOW (Moderate - Fever)"
+        if language_code == "bn-IN":
+            advice = "আপনার লক্ষণ অনুযায়ী জ্বর রয়েছে। পর্যাপ্ত জল বা ওআরএস পান করুন।"
+            solutions = ["প্রতি ৪-৬ ঘণ্টা পর পর তাপমাত্রা মাপুন।", "ওআরএস বা জল খেয়ে হাইড্রেটেড থাকুন।", "২৪ ঘণ্টার মধ্যে চিকিৎসকের পরামর্শ নিন।"]
+        elif language_code == "en-IN":
+            advice = "According to your symptoms, you have a fever. Stay hydrated with ORS and rest."
+            solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
+        else:
+            advice = "आपके लक्षणों के अनुसार आपको बुखार है। ओआरएस का घोल पिएं और आराम करें।"
+            solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
+
+    # ---- 5. GREEN (Mild) ----
     else:
         tier = "GREEN (Mild)"
         if language_code == "bn-IN":
             advice = "আপনার লক্ষণগুলি সাধারণ বলে মনে হচ্ছে। পর্যাপ্ত বিশ্রাম নিন।"
             solutions = ["১-২ দিন পর্যাপ্ত বিশ্রাম নিন।", "পর্যাপ্ত জল পান করুন।"]
-        elif language_code == "ta-IN":
-            advice = "உங்கள் அறிகுறிகள் சாதாரணமானவை போல் தெரிகிறது. போதுமான ஓய்வெடுக்கவும்."
-            solutions = ["1-2 நாட்கள் போதுமான ஓய்வு எடுக்கவும்.", "சரியான அளவில் தண்ணீர் குடிக்கவும்."]
-        elif language_code == "te-IN":
-            advice = "మీ లక్షణాలు సాధారణంగా కనిపిస్తున్నాయి. తగినంత విశ్రాంతి తీసుకోండి."
-            solutions = ["1-2 రోజులు తగినంత విశ్రాంతి తీసుకోండి.", "తగినంత నీరు త్రాగండి."]
-        elif language_code == "mr-IN":
-            advice = "तुमची लक्षणे सामान्य दिसत आहेत. पुरेशी विश्रांती घ्या."
-            solutions = ["१-२ दिवस पुरेशी विश्रांती घ्या.", "योग्य प्रमाणात पाणी प्या."]
         elif language_code == "en-IN":
             advice = "Your symptoms appear mild. Get adequate rest and monitor your health."
             solutions = ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
-        else: # Hindi
+        else:
             advice = "आपके लक्षण सामान्य प्रतीत होते हैं। पर्याप्त विश्राम करें।"
             solutions = ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
 
     return tier, advice, solutions
 
-# 3. TTS Function (Timbre v2.5)
+# 3. TTS Function (Timbre v2.5 with Fallback Check)
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
     if not API_KEY:
         return None
@@ -275,10 +182,11 @@ def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"
         "audio_config": {"sample_rate": 24000, "container": "wav"}
     }
     response = requests.post(url, headers={**HEADERS_KEY, "Content-Type": "application/json"}, json=payload)
-    if response.status_code == 200:
+    if response.status_code == 200 and len(response.content) > 100:
         with open(output_filename, "wb") as f:
             f.write(response.content)
         return output_filename
+    print(f"TTS Error Response: {response.text}")
     return None
 
 # API Endpoints
@@ -309,7 +217,7 @@ async def get_audio():
         return FileResponse("response.wav", media_type="audio/wav")
     return JSONResponse({"error": "Audio not found"}, status_code=404)
 
-# Frontend Dashboard with Glassy Navigation Bar, Selector Dropdown & Architecture Sections
+# Frontend Dashboard
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     return """
@@ -354,7 +262,7 @@ async def serve_frontend():
                     <div>
                         <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-emerald-400 text-xs font-medium mb-6">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>Multi-Indic Sovereign Voice AI Active</span>
+                            <span>Sovereign AI Active</span>
                         </div>
                         <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
                             Frontline Healthcare Intake & Pre-Triage Engine
@@ -403,12 +311,12 @@ async def serve_frontend():
                     <div class="flex items-center space-x-3">
                         <label for="languageSelect" class="text-xs font-mono-code text-neutral-400">Dialect:</label>
                         <select id="languageSelect" class="bg-neutral-900 text-white border border-neutral-700 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500 font-mono-code">
-                            <option value="hi-IN" selected>🇮🇳 Hindi (हिन्दी)</option>
-                            <option value="bn-IN">🇮🇳 Bengali (বাংলা)</option>
+                            <option value="hi-IN">🇮🇳 Hindi (हिन्दी)</option>
+                            <option value="bn-IN" selected>🇮🇳 Bengali (বাংলা)</option>
                             <option value="ta-IN">🇮🇳 Tamil (தமிழ்)</option>
                             <option value="te-IN">🇮🇳 Telugu (తెలుగు)</option>
                             <option value="mr-IN">🇮🇳 Marathi (मराठी)</option>
-                            <option value="en-IN">🌐 English (Indian Accent)</option>
+                            <option value="en-IN">🇮🇳 English (Indian Accent)</option>
                         </select>
                     </div>
                 </div>
