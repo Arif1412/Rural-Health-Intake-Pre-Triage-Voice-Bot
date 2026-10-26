@@ -10,6 +10,16 @@ API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS_KEY = {"X-API-Key-ID": API_KEY} if API_KEY else {}
 
+# Voice Mapping for Timbre v2.5 TTS across Indian Languages
+VOICE_MAP = {
+    "hi-IN": "Nalini",   # Hindi
+    "bn-IN": "Srabani",  # Bengali
+    "ta-IN": "Kavitha",  # Tamil
+    "te-IN": "Padma",    # Telugu
+    "mr-IN": "Pooja",    # Marathi
+    "en-IN": "Nalini"    # English (Indian Accent)
+}
+
 # 1. STT Function (Prisma v2.5)
 def transcribe_audio_file(file_path, language_code="hi-IN"):
     if not API_KEY:
@@ -29,36 +39,143 @@ def transcribe_audio_file(file_path, language_code="hi-IN"):
         return result.get("transcript") or result.get("text") or str(result)
     return f"STT Error: {response.text}"
 
-# 2. Dynamic Triage & Solutions Engine
-def evaluate_symptoms_and_solutions(transcript):
+# 2. Multilingual Triage & Solutions Engine (Hindi, Bengali, Tamil, Telugu, Marathi, English)
+def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
     if not transcript or "Error" in transcript:
-        return "UNKNOWN", "विवरण नहीं मिला।", []
-    t_lower = transcript.lower()
+        return "UNKNOWN", "विवरण नहीं मिला / Details not found.", []
     
-    if any(w in t_lower for w in ["chest pain", "breathlessness", "unconscious", "saans", "छाती में दर्द", "सांस फूलना"]):
-        return "RED (Emergency)", "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं।", ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."]
-    elif any(w in t_lower for w in ["eye", "आँख", "लेफ्ट आई", "right eye", "आंख"]):
-        return "YELLOW (Moderate)", "आपको आँख में दर्द या समस्या है। अपनी आँख को बार-बार न छुएं और तुरंत नेत्र विशेषज्ञ से मिलें।", ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
-    elif any(w in t_lower for w in ["hand", "हाथ", "arm", "उंगली"]):
-        return "YELLOW (Moderate)", "आपको हाथ या बाजू में दर्द की शिकायत है। उस हाथ को आराम दें और ज्यादा वजन न उठाएं।", ["Rest the affected arm.", "Avoid lifting heavy objects.", "Consult a doctor if pain persists."]
-    elif any(w in t_lower for w in ["sir dard", "headache", "sar dard", "सर दर्द", "सिर में दर्द"]):
-        return "YELLOW (Moderate)", "आपको सिर दर्द की शिकायत है। शांत और अंधेरे कमरे में आराम करें।", ["Apply a cold compress on your forehead.", "Stay hydrated.", "Consult a doctor if headache persists."]
-    elif any(w in t_lower for w in ["पैर में दर्द", "leg pain", "foot pain", "घुटना"]):
-        return "YELLOW (Moderate)", "आपको पैर में दर्द है। पैर को ऊंचा रखकर आराम करें।", ["Rest the affected leg.", "Apply ice pack if there is swelling.", "Consult a physician if pain continues."]
-    elif any(w in t_lower for w in ["bukhar", "fever", "बुखार"]):
-        return "YELLOW (Moderate)", "आपके लक्षणों के अनुसार आपको बुखार है। पर्याप्त पानी पिएं और आराम करें।", ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
-    elif any(w in t_lower for w in ["pet", "stomach", "vomit", "ulti", "पेट", "दस्त"]):
-        return "YELLOW (Moderate)", "पेट की समस्या के लिए हल्का और ताजा भोजन लें तथा ओआरएस का घोल पिएं।", ["Consume light foods like khichdi.", "Avoid spicy or oily food.", "Maintain strict hydration."]
+    t_lower = transcript.lower()
+
+    # Multilingual Keyword Arrays
+    red_keywords = [
+        "chest pain", "breathlessness", "unconscious", "saans", "छाती में दर्द", "सांस फूलना",
+        "বুক ব্যথা", "বুকে ব্যথা", "শ্বাসকষ্ট", "অজ্ঞান",
+        "மார்பக வலி", "மூச்சு திணறல்", "மயக்கம்",
+        "ఛాతీ నొప్పి", "శ్వాస తీసుకోవడంలో ఇబ్బంది", "స్పృహ కోల్పోవడం",
+        "छातीत दुखणे", "श्वास घेण्यास त्रास", "बेसुध"
+    ]
+
+    eye_keywords = [
+        "eye", "आँख", "right eye", "left eye", "आंख", "চোখ", "চোখে ব্যথা",
+        "கண்", "கண் வலி", "కన్ను", "डोळा"
+    ]
+
+    arm_keywords = [
+        "hand", "हाथ", "arm", "उंगली", "হাত", "হাতে ব্যথা",
+        "கை", "చేతి", "हात"
+    ]
+
+    headache_keywords = [
+        "sir dard", "headache", "sar dard", "सर दर्द", "सिर में दर्द", "মাথা ব্যথা", "মাথাব্যথা",
+        "தலைவலி", "తలనొప్పి", "डोकेदुखी"
+    ]
+
+    leg_keywords = [
+        "पैर में दर्द", "leg pain", "foot pain", "घुटना", "পা ব্যথা", "পায়ে ব্যথা",
+        "கால் வலி", "ಕಾಲು ನೋವು", "కాలు నొప్పి", "पाय दुखणे"
+    ]
+
+    fever_keywords = [
+        "bukhar", "fever", "बुखार", "ज্বর", "গা গরম",
+        "காய்ச்சல்", "జ్వరం", "ताप"
+    ]
+
+    stomach_keywords = [
+        "pet", "stomach", "vomit", "ulti", "पेट", "दस्त", "পেট ব্যথা", "বমি", "পাতলা পায়খানা",
+        "வயிறு வலி", "வாந்தி", "కడుపు నొప్పి", "వాంతి", "पोटदुखी", "उल्टी"
+    ]
+
+    # Evaluate Urgency Tier & Localized Guidance
+    if any(w in t_lower for w in red_keywords):
+        tier = "RED (Emergency)"
+        if language_code == "bn-IN":
+            advice = "সতর্কতা: মারাত্মক লক্ষণ দেখা গেছে। অবিলম্বে নিকটস্থ হাসপাতালে যান।"
+            solutions = ["অবিলম্বে ১০৮ এ্যাম্বুলেন্সে কল করুন।", "রোগীকে শান্ত রাখুন এবং সোজা বসিয়ে রাখুন।"]
+        elif language_code == "ta-IN":
+            advice = "எச்சரிக்கை: தீவிர அறிகுறிகள் கண்டறியப்பட்டுள்ளன. உடனடியாக அருகில் உள்ள மருத்துவமனைக்குச் செல்லவும்."
+            solutions = ["உடனடியாக 108 அவசர ஊர்தியை அழைக்கவும்.", "நோயாளி அமைதியாக நிமிர்ந்து அமர்ந்திருக்கச் செய்யவும்."]
+        elif language_code == "te-IN":
+            advice = "హెచ్చరిక: తీవ్రమైన లక్షణాలు గుర్తించబడ్డాయి. వెంటనే సమీప ఆసుపత్రికి వెళ్లండి."
+            solutions = ["వెంటనే 108 అంబులెన్స్‌కు కాల్ చేయండి.", "రోగిని ప్రశాంతంగా నిటారుగా కూర్చోబెట్టండి."]
+        elif language_code == "mr-IN":
+            advice = "चेतावणी: गंभीर लक्षणे आढळली आहेत. त्वरित जवळच्या रुग्णालयात जा."
+            solutions = ["त्वरित १०८ रुग्णवाहिकेला कॉल करा.", "रुग्णाला शांत ठेवा आणि सरळ बसवा."]
+        elif language_code == "en-IN":
+            advice = "Warning: Severe symptoms detected. Please proceed to the nearest emergency hospital immediately."
+            solutions = ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."]
+        else: # hi-IN
+            advice = "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं।"
+            solutions = ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."]
+
+    elif any(w in t_lower for w in eye_keywords):
+        tier = "YELLOW (Moderate - Eye)"
+        if language_code == "bn-IN":
+            advice = "আপনার চোখে সমস্যা বা ব্যথা রয়েছে। চোখ ঘষবেন না এবং চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"
+            solutions = ["পরিষ্কার জল দিয়ে চোখ ধুয়ে নিন।", "চোখ ঘষা থেকে বিরত থাকুন।", "২৪ ঘণ্টার মধ্যে চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"]
+        elif language_code == "ta-IN":
+            advice = "உங்கள் கண்ணில் வலி அல்லது பிரச்சினை உள்ளது. கண்களை கசக்க வேண்டாம் மற்றும் கண் மருத்துவரை அணுகவும்."
+            solutions = ["சுத்தமான நீரால் கண்களை மென்மையாக கழுவவும்.", "கண்களை கசக்குவதை தவிர்க்கவும்.", "24 மணி நேரத்திற்குள் கண் மருத்துவரை அணுகவும்."]
+        elif language_code == "te-IN":
+            advice = "మీ కంటిలో నొప్పి లేదా సమస్య ఉంది. కళ్ళను రుద్దకండి మరియు నేత్ర వైద్యుడిని సంప్రదించండి."
+            solutions = ["శుభ్రమైన నీటితో కళ్ళను సున్నితంగా కడగండి.", "కళ్ళు రుద్దడం మానుకోండి.", "24 గంటలలోపు నేత్ర వైద్యుడిని సంప్రదించండి."]
+        elif language_code == "mr-IN":
+            advice = "तुमच्या डोळ्यात दुखत आहे किंवा समस्या आहे. डोळे चोळू नका आणि नेत्रतज्ज्ञांचा सल्ला घ्या."
+            solutions = ["स्वच्छ पाण्याने डोळे हलके धुवा.", "डोळे चोळणे टाळा.", "२४ तासांच्या आत नेत्रतज्ज्ञांचा सल्ला घ्या."]
+        elif language_code == "en-IN":
+            advice = "You have an eye issue or pain. Avoid touching your eye and consult an ophthalmologist promptly."
+            solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
+        else: # hi-IN
+            advice = "आपको आँख में दर्द या समस्या है। अपनी आँख को बार-बार न छुएं और तुरंत नेत्र विशेषज्ञ से मिलें।"
+            solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
+
+    elif any(w in t_lower for w in arm_keywords):
+        tier = "YELLOW (Moderate - Arm/Hand)"
+        advice = "Rest the affected arm, avoid heavy lifting, and consult a physician if pain persists."
+        solutions = ["Rest the affected arm.", "Avoid lifting heavy objects.", "Consult a doctor if pain persists."]
+
+    elif any(w in t_lower for w in headache_keywords):
+        tier = "YELLOW (Moderate - Headache)"
+        advice = "You are experiencing a headache. Rest in a quiet, dark room and stay hydrated."
+        solutions = ["Apply a cold compress on your forehead.", "Stay hydrated.", "Consult a doctor if headache persists."]
+
+    elif any(w in t_lower for w in leg_keywords):
+        tier = "YELLOW (Moderate - Leg Pain)"
+        advice = "You have leg pain. Rest with your leg elevated and apply an ice pack if swollen."
+        solutions = ["Rest the affected leg.", "Apply ice pack if there is swelling.", "Consult a physician if pain continues."]
+
+    elif any(w in t_lower for w in fever_keywords):
+        tier = "YELLOW (Moderate - Fever)"
+        if language_code == "bn-IN":
+            advice = "আপনার লক্ষণ অনুযায়ী জ্বর রয়েছে। পর্যাপ্ত জল বা ওআরএস পান করুন।"
+            solutions = ["প্রতি ৪-৬ ঘণ্টা পর পর তাপমাত্রা মাপুন।", "ওআরএস বা জল খেয়ে হাইড্রেটেড থাকুন।", "২৪ ঘণ্টার মধ্যে চিকিৎসকের পরামর্শ নিন।"]
+        else:
+            advice = "According to your symptoms, you have a fever. Stay hydrated with ORS and rest."
+            solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
+
+    elif any(w in t_lower for w in stomach_keywords):
+        tier = "YELLOW (Moderate - Stomach)"
+        advice = "For stomach discomfort, consume light foods and maintain strict hydration with ORS."
+        solutions = ["Consume light foods like khichdi.", "Avoid spicy or oily food.", "Maintain strict hydration."]
+
     else:
-        return "GREEN (Mild)", "आपके लक्षण सामान्य प्रतीत होते हैं। पर्याप्त विश्राम करें और स्वास्थ्य केंद्र से परामर्श लें।", ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
+        tier = "GREEN (Mild)"
+        if language_code == "bn-IN":
+            advice = "আপনার লক্ষণগুলি সাধারণ বলে মনে হচ্ছে। পর্যাপ্ত বিশ্রাম নিন।"
+            solutions = ["১-২ দিন পর্যাপ্ত বিশ্রাম নিন।", "পর্যাপ্ত জল পান করুন।"]
+        else:
+            advice = "Your symptoms appear mild. Get adequate rest and monitor your health."
+            solutions = ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
+
+    return tier, advice, solutions
 
 # 3. TTS Function (Timbre v2.5)
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
     if not API_KEY:
         return None
     url = f"{BASE_URL}/api/v1/tts/inference"
+    voice_name = VOICE_MAP.get(language_code, "Nalini")
     payload = {
-        "text": text, "voice": "Nalini", "model": "timbre-v2.5",
+        "text": text, "voice": voice_name, "model": "timbre-v2.5",
         "language": language_code, "speed": 1.0,
         "audio_config": {"sample_rate": 24000, "container": "wav"}
     }
@@ -77,7 +194,7 @@ async def analyze_audio(file: UploadFile = File(...), language: str = Form("hi-I
         buffer.write(await file.read())
         
     transcript = transcribe_audio_file(temp_filename, language_code=language)
-    triage_level, advice, solutions = evaluate_symptoms_and_solutions(transcript)
+    triage_level, advice, solutions = evaluate_symptoms_and_solutions(transcript, language_code=language)
     audio_output_path = synthesize_voice(advice, language_code=language)
     
     if os.path.exists(temp_filename):
@@ -97,7 +214,7 @@ async def get_audio():
         return FileResponse("response.wav", media_type="audio/wav")
     return JSONResponse({"error": "Audio not found"}, status_code=404)
 
-# Frontend Dashboard
+# Frontend Dashboard with Language Selection Dropdown
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     return """
@@ -106,7 +223,7 @@ async def serve_frontend():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>AarogyaVoice — Sovereign AI Pre-Triage Assistant</title>
+        <title>AarogyaVoice — Multi-Indic Sovereign AI Pre-Triage Assistant</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -142,21 +259,21 @@ async def serve_frontend():
                     <div>
                         <div class="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full text-emerald-400 text-xs font-medium mb-6">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            <span>Sovereign Voice AI Active</span>
+                            <span>Multi-Indic Sovereign Voice AI Active</span>
                         </div>
                         <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers (ASHA/ANM) in rural India to capture patient speech in sovereign vernacular dialects, process clinical pre-triage assessment and return instant spoken guidance.
+                            AarogyaVoice empowers community health workers (ASHA/ANM) across India to capture patient speech in 6 major Indic dialects, process clinical pre-triage assessment and return instant spoken guidance.
                         </p>
                     </div>
 
                     <div class="mt-8 pt-6 border-t border-neutral-800/80 flex flex-wrap gap-2">
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Gnani Prisma v2.5 STT</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Gnani Timbre v2.5 TTS</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Prisma v2.5 STT</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Timbre v2.5 TTS</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">6 Indic Languages</span>
                         <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">FastAPI</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 hover:text-white transition-all duration-200 text-xs px-3 py-1 rounded-md font-mono-code cursor-default">Render Deployment</span>
                     </div>
                 </div>
 
@@ -169,28 +286,36 @@ async def serve_frontend():
 <span class="text-purple-400">const</span> <span class="text-blue-400">AarogyaVoice</span> = {
   <span class="text-neutral-500">model_stt</span>: <span class="text-emerald-300">"Prisma v2.5"</span>,
   <span class="text-neutral-500">model_tts</span>: <span class="text-emerald-300">"Timbre v2.5"</span>,
-  <span class="text-neutral-500">dialect</span>: <span class="text-amber-300">"hi-IN (Hindi)"</span>,
-  <span class="text-neutral-500">triage_tiers</span>: [<span class="text-red-400">"RED"</span>, <span class="text-amber-400">"YELLOW"</span>, <span class="text-emerald-400">"GREEN"</span>],
-  <span class="text-neutral-500">target_users</span>: <span class="text-emerald-300">"ASHA / ANM Workers"</span>
-};
-
-<span class="text-neutral-500">// Sovereign pipeline ready</span>
-<span class="text-blue-400">console</span>.log(<span class="text-emerald-300">"Pipeline initialized."</span>);</pre>
+  <span class="text-neutral-500">languages</span>: [<span class="text-amber-300">"Hindi", "Bengali", "Tamil", "Telugu", "Marathi", "English"</span>],
+  <span class="text-neutral-500">triage_tiers</span>: [<span class="text-red-400">"RED"</span>, <span class="text-amber-400">"YELLOW"</span>, <span class="text-emerald-400">"GREEN"</span>]
+};</pre>
                     <div class="pt-3 border-t border-neutral-800/80 text-[11px] text-neutral-500 flex justify-between">
                         <span>Status: 200 OK</span>
-                        <span>Latency: &lt; 680ms</span>
+                        <span>Multi-Dialect Ready</span>
                     </div>
                 </div>
             </section>
 
             <!-- Voice Intake Console Section -->
             <section id="intake" class="bg-neutral-900/30 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 rounded-2xl p-8 shadow-xl">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-white tracking-tight">Clinical Voice Intake Console</h2>
-                        <p class="text-xs text-neutral-400 mt-1">Upload patient audio recording (.wav or .mp3) for instant analysis</p>
+                        <p class="text-xs text-neutral-400 mt-1">Select language dialect and upload patient audio recording (.wav or .mp3)</p>
                     </div>
-                    <span class="bg-neutral-900 text-neutral-400 border border-neutral-800 text-xs px-3 py-1 rounded-lg font-mono-code">Step 01 / 02</span>
+
+                    <!-- Language Selection Dropdown -->
+                    <div class="flex items-center space-x-3">
+                        <label for="languageSelect" class="text-xs font-mono-code text-neutral-400">Dialect:</label>
+                        <select id="languageSelect" class="bg-neutral-900 text-white border border-neutral-700 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500 font-mono-code">
+                            <option value="hi-IN" selected>🇮🇳 Hindi (हिन्दी)</option>
+                            <option value="bn-IN">🇮🇳 Bengali (বাংলা)</option>
+                            <option value="ta-IN">🇮🇳 Tamil (தமிழ்)</option>
+                            <option value="te-IN">🇮🇳 Telugu (తెలుగు)</option>
+                            <option value="mr-IN">🇮🇳 Marathi (मराठी)</option>
+                            <option value="en-IN">🌐 English (Indian Accent)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Dropzone Card -->
@@ -201,7 +326,7 @@ async def serve_frontend():
                             📁
                         </div>
                         <p class="text-sm font-semibold text-neutral-200 group-hover:text-white transition-colors duration-200">Click or drop audio file here</p>
-                        <p class="text-xs text-neutral-500">Supports Hindi, Hinglish & Regional Accents (.wav, .mp3)</p>
+                        <p class="text-xs text-neutral-500">Supports Hindi, Bengali, Tamil, Telugu, Marathi & English (.wav, .mp3)</p>
                     </div>
                 </div>
 
@@ -223,7 +348,7 @@ async def serve_frontend():
                 <!-- Loading Spinner -->
                 <div id="loader" class="hidden text-center my-8">
                     <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Transcribing with Prisma v2.5 & synthesizing voice response...</p>
+                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Transcribing speech & synthesizing regional voice response...</p>
                 </div>
 
                 <!-- Results Output Grid -->
@@ -267,17 +392,17 @@ async def serve_frontend():
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
                         <span class="text-neutral-500 text-[10px]">01 / STT PIPELINE</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Prisma v2.5</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from Indian languages into accurate text with native numeral normalization.</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Transcribes spoken patient complaints from multi-Indic languages into accurate text with native numeral normalization.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
                         <span class="text-neutral-500 text-[10px]">02 / CLINICAL LOGIC</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Pre-Triage Engine</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms severely based on body organ & critical markers (chest pain, fever, eye, arm/leg pain) into Red, Yellow or Green urgency levels.</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms across multiple dialects into Red, Yellow or Green urgency levels with structured worker checklists.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
                         <span class="text-neutral-500 text-[10px]">03 / VOICE SYNTHESIS</span>
                         <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Timbre v2.5</h3>
-                        <p class="text-neutral-400 text-[11px] leading-relaxed">Synthesizes natural, localized voice instructions ('Nalini' voice model at 24kHz) to guide health workers and patients immediately.</p>
+                        <p class="text-neutral-400 text-[11px] leading-relaxed">Synthesizes natural, localized voice instructions using regional models (Nalini, Srabani, Padma, etc. at 24kHz).</p>
                     </div>
                 </div>
             </section>
@@ -291,11 +416,11 @@ async def serve_frontend():
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-neutral-300 leading-relaxed">
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-600 hover:-translate-y-1 transition-all duration-300 p-6 rounded-xl space-y-2 shadow-lg">
                         <h3 class="text-sm font-bold text-white">The Problem Statement</h3>
-                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) often struggle with language barriers, heavy patient queues and rapid symptom categorization, leading to delayed emergency triage.</p>
+                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) struggle with diverse regional language barriers, heavy queues, and rapid symptom categorization.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-600 hover:-translate-y-1 transition-all duration-300 p-6 rounded-xl space-y-2 shadow-lg">
-                        <h3 class="text-sm font-bold text-white">Sovereign AI Solution</h3>
-                        <p class="text-neutral-400">AarogyaVoice leverages indigenous voice technology built specifically for Indian languages. It bridges the gap between patient speech intake and immediate clinical triage advice without requiring complex text interfaces.</p>
+                        <h3 class="text-sm font-bold text-white">Sovereign Multi-Indic AI Solution</h3>
+                        <p class="text-neutral-400">AarogyaVoice leverages indigenous voice technology built specifically for Indian regional dialects, bridging patient intake and immediate clinical guidance seamlessly.</p>
                     </div>
                 </div>
             </section>
@@ -318,7 +443,6 @@ async def serve_frontend():
                     const uploadPrompt = document.getElementById('uploadPrompt');
 
                     info.innerText = `Selected File: ${selectedFile.name} (${(selectedFile.size/1024/1024).toFixed(2)} MB)`;
-                    
                     previewPlayer.src = URL.createObjectURL(selectedFile);
                     container.classList.remove('hidden');
                     uploadPrompt.innerHTML = `<div class="w-10 h-10 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2">✅</div><p class="text-sm font-semibold text-emerald-400">Audio File Loaded Successfully</p><p class="text-xs text-neutral-500">Click or drop another file to replace</p>`;
@@ -327,9 +451,11 @@ async def serve_frontend():
 
             async function analyzeAudio() {
                 if(!selectedFile) return alert("Please select an audio file first!");
+                const lang = document.getElementById('languageSelect').value;
+
                 const formData = new FormData();
                 formData.append("file", selectedFile);
-                formData.append("language", "hi-IN");
+                formData.append("language", lang);
 
                 document.getElementById('loader').classList.remove('hidden');
                 document.getElementById('results').classList.add('hidden');
