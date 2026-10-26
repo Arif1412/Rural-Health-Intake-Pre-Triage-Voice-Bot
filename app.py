@@ -10,17 +10,15 @@ API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS_KEY = {"X-API-Key-ID": API_KEY} if API_KEY else {}
 
-# Voice Mapping for Timbre v2.5 TTS across Indian Languages
 VOICE_MAP = {
-    "hi-IN": "Nalini",   # Hindi
-    "bn-IN": "Srabani",  # Bengali
-    "ta-IN": "Kavitha",  # Tamil
-    "te-IN": "Padma",    # Telugu
-    "mr-IN": "Pooja",    # Marathi
-    "en-IN": "Nalini"    # English (Indian Accent)
+    "hi-IN": "Nalini",   
+    "bn-IN": "Srabani",  
+    "ta-IN": "Kavitha",  
+    "te-IN": "Padma",    
+    "mr-IN": "Pooja",    
+    "en-IN": "Nalini"    
 }
 
-# 1. STT Function (Prisma v2.5)
 def transcribe_audio_file(file_path, language_code="hi-IN"):
     if not API_KEY:
         return "API Key not configured."
@@ -39,14 +37,12 @@ def transcribe_audio_file(file_path, language_code="hi-IN"):
         return result.get("transcript") or result.get("text") or str(result)
     return f"STT Error: {response.text}"
 
-# 2. Fully Localized Multilingual Triage & Solutions Engine (Expanded Bengali Support)
 def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
     if not transcript or "Error" in transcript:
         return "UNKNOWN", "विवरण नहीं मिला / Details not found.", []
     
     t_lower = transcript.lower()
 
-    # Multilingual Keyword Arrays (Expanded with variations like पेটে ব্যথা / পেটে ব্যাথা)
     red_keywords = [
         "chest pain", "breathlessness", "unconscious", "saans", "छाती में दर्द", "सांस फूलना",
         "বুক ব্যথা", "বুকে ব্যথা", "বুকের ব্যাথা", "শ্বাসকষ্ট", "অজ্ঞান",
@@ -71,7 +67,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
     ]
 
     leg_keywords = [
-        "প্যার মে दर्द", "leg pain", "foot pain", "घुटना", "পা ব্যথা", "পায়ে ব্যথা",
+        "पैर में दर्द", "leg pain", "foot pain", "घुटना", "পা ব্যথা", "পায়ে ব্যথা",
         "கால் வலி", "ಕಾಲು ನೋವು", "కాలు నొప్పి", "पाय दुखणे"
     ]
 
@@ -85,7 +81,6 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
         "வயிறு வலி", "வாந்தி", "కడుపు నొప్పి", "వాంతి", "पोटदुखी", "उल्टी"
     ]
 
-    # ---- 1. RED (Emergency) ----
     if any(w in t_lower for w in red_keywords):
         tier = "RED (Emergency)"
         if language_code == "bn-IN":
@@ -107,7 +102,6 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
             advice = "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं।"
             solutions = ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."]
 
-    # ---- 2. YELLOW (Moderate - Stomach / पेट / পেটে ব্যথা) ----
     elif any(w in t_lower for w in stomach_keywords):
         tier = "YELLOW (Moderate - Stomach)"
         if language_code == "bn-IN":
@@ -129,7 +123,6 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
             advice = "पेट की समस्या के लिए हल्का भोजन लें और ओआरएस का घोल पिएं।"
             solutions = ["Consume light foods like khichdi.", "Avoid spicy or oily food.", "Maintain strict hydration."]
 
-    # ---- 3. YELLOW (Moderate - Eye) ----
     elif any(w in t_lower for w in eye_keywords):
         tier = "YELLOW (Moderate - Eye)"
         if language_code == "bn-IN":
@@ -142,7 +135,6 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
             advice = "आपको आँख में दर्द या समस्या है। अपनी आँख को बार-बार न छुएं और तुरंत नेत्र विशेषज्ञ से मिलें।"
             solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
 
-    # ---- 4. YELLOW (Moderate - Fever) ----
     elif any(w in t_lower for w in fever_keywords):
         tier = "YELLOW (Moderate - Fever)"
         if language_code == "bn-IN":
@@ -155,7 +147,6 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
             advice = "आपके लक्षणों के अनुसार आपको बुखार है। ओआरएस का घोल पिएं और आराम करें।"
             solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
 
-    # ---- 5. GREEN (Mild) ----
     else:
         tier = "GREEN (Mild)"
         if language_code == "bn-IN":
@@ -170,7 +161,6 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
 
     return tier, advice, solutions
 
-# 3. TTS Function (Timbre v2.5 with Fallback Check)
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
     if not API_KEY:
         return None
@@ -186,10 +176,8 @@ def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"
         with open(output_filename, "wb") as f:
             f.write(response.content)
         return output_filename
-    print(f"TTS Error Response: {response.text}")
     return None
 
-# API Endpoints
 @app.post("/api/analyze")
 async def analyze_audio(file: UploadFile = File(...), language: str = Form("hi-IN")):
     temp_filename = f"temp_{file.filename}"
@@ -217,7 +205,6 @@ async def get_audio():
         return FileResponse("response.wav", media_type="audio/wav")
     return JSONResponse({"error": "Audio not found"}, status_code=404)
 
-# Frontend Dashboard
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     return """
@@ -363,7 +350,10 @@ async def serve_frontend():
                         </div>
 
                         <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-700 transition-all duration-300 p-5 rounded-xl shadow-md">
-                            <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider block mb-2">Voice Guidance (Timbre v2.5)</span>
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] font-mono-code text-neutral-500 uppercase tracking-wider">Voice Guidance</span>
+                                <button onclick="speakAdvice()" id="speakBtn" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 text-[10px] font-mono-code px-2 py-0.5 rounded transition-all">🔊 Speak Guidance</button>
+                            </div>
                             <audio id="audioPlayer" controls class="w-full h-8 mt-1"></audio>
                         </div>
                     </div>
@@ -419,7 +409,7 @@ async def serve_frontend():
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-neutral-300 leading-relaxed">
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-600 hover:-translate-y-1 transition-all duration-300 p-6 rounded-xl space-y-2 shadow-lg">
                         <h3 class="text-sm font-bold text-white">The Problem Statement</h3>
-                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) struggle with diverse regional language barriers, heavy queues, and rapid symptom categorization.</p>
+                        <p class="text-neutral-400">Rural primary health centers and frontline community health workers (ASHA / ANMs) struggle with diverse regional language barriers, heavy queues and rapid symptom categorization.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-600 hover:-translate-y-1 transition-all duration-300 p-6 rounded-xl space-y-2 shadow-lg">
                         <h3 class="text-sm font-bold text-white">Sovereign Multi-Indic AI Solution</h3>
@@ -436,6 +426,8 @@ async def serve_frontend():
 
         <script>
             let selectedFile = null;
+            let currentAdviceText = "";
+            let currentLangCode = "hi-IN";
 
             function handleFileSelect(e) {
                 selectedFile = e.target.files[0];
@@ -452,13 +444,20 @@ async def serve_frontend():
                 }
             }
 
+            function speakAdvice() {
+                if (!currentAdviceText) return;
+                const utterance = new SpeechSynthesisUtterance(currentAdviceText);
+                utterance.lang = currentLangCode; // e.g. bn-IN, hi-IN, etc.
+                window.speechSynthesis.speak(utterance);
+            }
+
             async function analyzeAudio() {
                 if(!selectedFile) return alert("Please select an audio file first!");
-                const lang = document.getElementById('languageSelect').value;
+                currentLangCode = document.getElementById('languageSelect').value;
 
                 const formData = new FormData();
                 formData.append("file", selectedFile);
-                formData.append("language", lang);
+                formData.append("language", currentLangCode);
 
                 document.getElementById('loader').classList.remove('hidden');
                 document.getElementById('results').classList.add('hidden');
@@ -468,6 +467,9 @@ async def serve_frontend():
                     const result = await res.json();
 
                     document.getElementById('transcriptBox').innerText = result.transcript;
+                    currentAdviceText = result.advice;
+                    document.getElementById('adviceBox').innerText = currentAdviceText;
+
                     const badge = document.getElementById('triageBadge');
                     badge.innerText = result.triage_level;
                     if(result.triage_level.includes("RED")) {
@@ -478,7 +480,6 @@ async def serve_frontend():
                         badge.className = "px-3 py-1.5 rounded-lg font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
                     }
 
-                    document.getElementById('adviceBox').innerText = result.advice;
                     const list = document.getElementById('solutionsList');
                     list.innerHTML = "";
                     result.solutions.forEach(s => {
@@ -490,8 +491,12 @@ async def serve_frontend():
                     if(result.audio_url) {
                         const player = document.getElementById('audioPlayer');
                         player.src = result.audio_url + "?t=" + new Date().getTime();
-                        player.play().catch(e => console.log(e));
+                        player.load();
                     }
+
+                    // Show Speak fallback button
+                    document.getElementById('speakBtn').classList.remove('hidden');
+
                     document.getElementById('results').classList.remove('hidden');
                 } catch(e) {
                     alert("Error processing audio: " + e);
