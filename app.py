@@ -11,13 +11,13 @@ API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS_KEY = {"X-API-Key-ID": API_KEY} if API_KEY else {}
 
-# Voice Mapping for Timbre v2.5 TTS across Indian Languages
+# Universal Voice Mapping for Timbre v2.5 TTS (Using 'Nalini' across all Indic languages for 100% compatibility)
 VOICE_MAP = {
     "hi-IN": "Nalini",   # Hindi
-    "bn-IN": "Srabani",  # Bengali
-    "ta-IN": "Kavitha",  # Tamil
-    "te-IN": "Padma",    # Telugu
-    "mr-IN": "Pooja",    # Marathi
+    "bn-IN": "Nalini",   # Bengali
+    "ta-IN": "Nalini",   # Tamil
+    "te-IN": "Nalini",   # Telugu
+    "mr-IN": "Nalini",   # Marathi
     "en-IN": "Nalini"    # English
 }
 
@@ -80,7 +80,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
 
     stomach_keywords = [
         "pet", "stomach", "vomit", "ulti", "पेट", "दस्त", "পেট", "পেটে ব্যথা", "পেটে ব্যাথা", "বমি", "পাতলা পায়খানা", "ব্যথা করছে",
-        "வயிறு வலி", "வாந்தி", "కడుపు", "కడుపు నొప్పి", "వాంతి", "పोटदुखी", "उल्टी"
+        "வயிறு வலி", "வாந்தி", "కడుపు", "కడుపు నొప్పి", "వాంతి", "पोटदुखी", "उल्टी"
     ]
 
     if any(w in t_lower for w in red_keywords):
@@ -196,7 +196,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
 
     return tier, advice, solutions
 
-# Robust Gnani AI Timbre v2.5 TTS Integration (Handles both JSON/Base64 and Raw Audio Bytes)
+# Robust Gnani AI Timbre v2.5 TTS Integration
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
     if not API_KEY:
         return None
@@ -216,7 +216,6 @@ def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"
     response = requests.post(url, headers={**HEADERS_KEY, "Content-Type": "application/json"}, json=payload)
     if response.status_code == 200:
         try:
-            # Attempt parsing as JSON in case API returns base64 encoded audio
             res_json = response.json()
             audio_base64 = res_json.get("audio") or res_json.get("audio_content") or res_json.get("data") or res_json.get("audio_base64")
             if audio_base64:
@@ -226,7 +225,6 @@ def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"
         except Exception:
             pass
 
-        # Fallback to direct binary audio bytes
         if len(response.content) > 100:
             with open(output_filename, "wb") as f:
                 f.write(response.content)
