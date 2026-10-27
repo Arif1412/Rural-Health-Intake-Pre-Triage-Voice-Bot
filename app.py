@@ -1,4 +1,5 @@
 import os
+import base64
 import requests
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
@@ -10,7 +11,7 @@ API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS_KEY = {"X-API-Key-ID": API_KEY} if API_KEY else {}
 
-# Voice Mapping for Timbre v2.5 TTS across Indian Languages (Updated with Padma & Pooja)
+# Voice Mapping for Timbre v2.5 TTS across Indian Languages
 VOICE_MAP = {
     "hi-IN": "Nalini",   # Hindi
     "bn-IN": "Srabani",  # Bengali
@@ -149,7 +150,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
             solutions = ["প্রতি ৪-৬ ঘণ্টা পর পর তাপমাত্রা মাপুন।", "ওআরএস বা জল খেয়ে হাইড্রেটেড থাকুন।", "২৪ ঘণ্টার মধ্যে চিকিৎসকের পরামর্শ নিন।"]
         elif language_code == "te-IN":
             advice = "మీకు జ్వరం ఉంది. తగినంత నీరు త్రాగి విశ్రాంతి తీసుకోండి."
-            solutions = ["ప్రతి 4-6 గంటలకు శరీర ఉష్ణోగ్రతను త검ించండి.", "ORS తో హైడ్రేటెడ్ గా ఉండండి.", "24 గంటలలోపు వైద్యుడిని సంప్రదించండి."]
+            solutions = ["ప్రతి 4-6 గంటలకు శరీర ఉష్ణోగ్రతను తనిఖీ చేయండి.", "ORS తో హైడ్రేటెడ్ గా ఉండండి.", "24 గంటలలోపు వైద్యుడిని సంప్రదించండి."]
         elif language_code == "mr-IN":
             advice = "तुम्हाला ताप आहे. भरपूर पाणी प्या आणि आराम करा."
             solutions = ["दर 4-6 तासांनी शरीराचे तापमान तपासा.", "ORS चे सेवन करा.", "24 तासांच्या आत वैद्यांचा सल्ला घ्या."]
@@ -167,7 +168,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
             solutions = ["నుదుటిపై చల్లని వస్త్రం ఉంచండి.", "ప్రకాశవంతమైన స్క్రీన్‌లను నివారించండి.", "విశ్రాంతి తీసుకోండి."]
         elif language_code == "mr-IN":
             advice = "तुम्हाला डोकेदुखीचा त्रास आहे. शांत आणि अंधाऱ्या खोलीत विश्रांती घ्या."
-            solutions = [" कपाळावर थंड पट्टी ठेवा.", "उजेड किंवा स्क्रीनपासून दूर राहा.", "आराम करा."]
+            solutions = ["कपाळावर थंड पट्टी ठेवा.", "उजेड किंवा स्क्रीनपासून दूर राहा.", "आराम करा."]
         elif language_code == "en-IN":
             advice = "You are experiencing a headache. Rest in a quiet, dark room."
             solutions = ["Apply a cold compress.", "Avoid bright screens.", "Stay hydrated."]
@@ -195,7 +196,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
 
     return tier, advice, solutions
 
-# Gnani AI Timbre v2.5 TTS Integration
+# Robust Gnani AI Timbre v2.5 TTS Integration (Handles both JSON/Base64 and Raw Audio Bytes)
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
     if not API_KEY:
         return None
@@ -213,10 +214,24 @@ def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"
         }
     }
     response = requests.post(url, headers={**HEADERS_KEY, "Content-Type": "application/json"}, json=payload)
-    if response.status_code == 200 and len(response.content) > 100:
-        with open(output_filename, "wb") as f:
-            f.write(response.content)
-        return output_filename
+    if response.status_code == 200:
+        try:
+            # Attempt parsing as JSON in case API returns base64 encoded audio
+            res_json = response.json()
+            audio_base64 = res_json.get("audio") or res_json.get("audio_content") or res_json.get("data") or res_json.get("audio_base64")
+            if audio_base64:
+                with open(output_filename, "wb") as f:
+                    f.write(base64.b64decode(audio_base64))
+                return output_filename
+        except Exception:
+            pass
+
+        # Fallback to direct binary audio bytes
+        if len(response.content) > 100:
+            with open(output_filename, "wb") as f:
+                f.write(response.content)
+            return output_filename
+
     print(f"Gnani TTS API Error [{response.status_code}]: {response.text}")
     return None
 
