@@ -10,7 +10,7 @@ API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS_KEY = {"X-API-Key-ID": API_KEY} if API_KEY else {}
 
-# Voice Mapping for Timbre v2.5 TTS across Indian Languages
+# Voice Mapping for Timbre v2.5 TTS across Indian Languages (Updated with Padma & Pooja)
 VOICE_MAP = {
     "hi-IN": "Nalini",   # Hindi
     "bn-IN": "Srabani",  # Bengali
@@ -54,7 +54,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
 
     eye_keywords = [
         "eye", "आँख", "लेफ्ट आई", "right eye", "left eye", "आंख", "চোখ", "চোখে ব্যথা",
-        "கண்", "கண் வலி", "కన్ను", "डोळा"
+        "கண்", "கண் வலி", "కన్ను", "కంటిలో", "डोळा", "डोळ्यात"
     ]
 
     arm_keywords = [
@@ -79,7 +79,7 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
 
     stomach_keywords = [
         "pet", "stomach", "vomit", "ulti", "पेट", "दस्त", "পেট", "পেটে ব্যথা", "পেটে ব্যাথা", "বমি", "পাতলা পায়খানা", "ব্যথা করছে",
-        "வயிறு வலி", "வாந்தி", "కడుపు నొప్పి", "వాంతి", "पोटदुखी", "उल्टी"
+        "வயிறு வலி", "வாந்தி", "కడుపు", "కడుపు నొప్పి", "వాంతి", "పोटदुखी", "उल्टी"
     ]
 
     if any(w in t_lower for w in red_keywords):
@@ -129,6 +129,12 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
         if language_code == "bn-IN":
             advice = "আপনার চোখে সমস্যা বা ব্যথা রয়েছে। চোখ ঘষবেন না এবং চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"
             solutions = ["পরিষ্কার জল দিয়ে চোখ ধুয়ে নিন।", "চোখ ঘষা থেকে বিরত থাকুন।", "২৪ ঘণ্টার মধ্যে চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"]
+        elif language_code == "te-IN":
+            advice = "మీ కంటిలో నొప్పి లేదా సమస్య ఉంది. మీ కంటిని రుద్దకండి మరియు నేత్ర వైద్యుడిని సంప్రదించండి."
+            solutions = ["శుభ్రమైన నీటితో కళ్లను మెత్తగా కడగండి.", "కళ్లను రుద్దకండి.", "24 గంటలలోపు నేత్ర వైద్యుడిని సంప్రదించండి."]
+        elif language_code == "mr-IN":
+            advice = "तुमच्या डोळ्यात दुखत आहे. डोळा चोळू नका आणि ताबडतोब नेत्रतज्ज्ञांना भेट द्या."
+            solutions = ["स्वच्छ पाण्याने डोळे हलके धुवा.", "डोळे चोळणे टाळा.", "24 तासांच्या आत नेत्रतज्ज्ञांचा सल्ला घ्या."]
         elif language_code == "en-IN":
             advice = "You have an eye issue or pain. Avoid touching your eye and consult an ophthalmologist promptly."
             solutions = ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]
@@ -141,6 +147,12 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
         if language_code == "bn-IN":
             advice = "আপনার লক্ষণ অনুযায়ী জ্বর রয়েছে। পর্যাপ্ত জল বা ওআরএস পান করুন।"
             solutions = ["প্রতি ৪-৬ ঘণ্টা পর পর তাপমাত্রা মাপুন।", "ওআরএস বা জল খেয়ে হাইড্রেটেড থাকুন।", "২৪ ঘণ্টার মধ্যে চিকিৎসকের পরামর্শ নিন।"]
+        elif language_code == "te-IN":
+            advice = "మీకు జ్వరం ఉంది. తగినంత నీరు త్రాగి విశ్రాంతి తీసుకోండి."
+            solutions = ["ప్రతి 4-6 గంటలకు శరీర ఉష్ణోగ్రతను త검ించండి.", "ORS తో హైడ్రేటెడ్ గా ఉండండి.", "24 గంటలలోపు వైద్యుడిని సంప్రదించండి."]
+        elif language_code == "mr-IN":
+            advice = "तुम्हाला ताप आहे. भरपूर पाणी प्या आणि आराम करा."
+            solutions = ["दर 4-6 तासांनी शरीराचे तापमान तपासा.", "ORS चे सेवन करा.", "24 तासांच्या आत वैद्यांचा सल्ला घ्या."]
         elif language_code == "en-IN":
             advice = "According to your symptoms, you have a fever. Stay hydrated with ORS and rest."
             solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
@@ -148,11 +160,32 @@ def evaluate_symptoms_and_solutions(transcript, language_code="hi-IN"):
             advice = "आपके लक्षणों के अनुसार आपको बुखार है। ओआरएस का घोल पिएं और आराम करें।"
             solutions = ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a general physician within 24 hours."]
 
+    elif any(w in t_lower for w in headache_keywords):
+        tier = "YELLOW (Moderate - Headache)"
+        if language_code == "te-IN":
+            advice = "మీకు తలనొప్పి ఉంది. ప్రశాంతమైన మరియు చీకటి గదిలో విశ్రాంతి తీసుకోండి."
+            solutions = ["నుదుటిపై చల్లని వస్త్రం ఉంచండి.", "ప్రకాశవంతమైన స్క్రీన్‌లను నివారించండి.", "విశ్రాంతి తీసుకోండి."]
+        elif language_code == "mr-IN":
+            advice = "तुम्हाला डोकेदुखीचा त्रास आहे. शांत आणि अंधाऱ्या खोलीत विश्रांती घ्या."
+            solutions = [" कपाळावर थंड पट्टी ठेवा.", "उजेड किंवा स्क्रीनपासून दूर राहा.", "आराम करा."]
+        elif language_code == "en-IN":
+            advice = "You are experiencing a headache. Rest in a quiet, dark room."
+            solutions = ["Apply a cold compress.", "Avoid bright screens.", "Stay hydrated."]
+        else:
+            advice = "आपको सिर दर्द की शिकायत है। शांत कमरे में आराम करें।"
+            solutions = ["Apply a cold compress.", "Avoid bright screens.", "Stay hydrated."]
+        
     else:
         tier = "GREEN (Mild)"
         if language_code == "bn-IN":
             advice = "আপনার লক্ষণগুলি সাধারণ বলে মনে হচ্ছে। পর্যাপ্ত বিশ্রাম নিন।"
             solutions = ["১-২ দিন পর্যাপ্ত বিশ্রাম নিন।", "পর্যাপ্ত জল পান করুন।"]
+        elif language_code == "te-IN":
+            advice = "మీ లక్షణాలు సాధారణంగా ఉన్నాయి. తగినంత విశ్రాంతి తీసుకోండి."
+            solutions = ["1-2 రోజులు తగినంత విశ్రాంతి తీసుకోండి.", "మంచి ఆహారం మరియు నీరు తీసుకోండి."]
+        elif language_code == "mr-IN":
+            advice = "तुमची लक्षणे सामान्य आहेत. पुरेशी विश्रांती घ्या."
+            solutions = ["1-2 दिवस विश्रांती घ्या.", "पाण्याचे प्रमाण योग्य ठेवा."]
         elif language_code == "en-IN":
             advice = "Your symptoms appear mild. Get adequate rest and monitor your health."
             solutions = ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
@@ -310,7 +343,7 @@ async def serve_frontend():
                         <label for="languageSelect" class="text-xs font-mono-code text-neutral-400">Dialect:</label>
                         <select id="languageSelect" class="bg-neutral-900 text-white border border-neutral-700 text-xs px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500 font-mono-code">
                             <option value="hi-IN">🇮🇳 Hindi (हिन्दी)</option>
-                            <option value="bn-IN" selected>🇮🇳 Bengali (বাংলা)</option>
+                            <option value="bn-IN">🇮🇳 Bengali (বাংলা)</option>
                             <option value="ta-IN">🇮🇳 Tamil (தமிழ்)</option>
                             <option value="te-IN">🇮🇳 Telugu (తెలుగు)</option>
                             <option value="mr-IN">🇮🇳 Marathi (मराठी)</option>
@@ -490,7 +523,6 @@ async def serve_frontend():
                         const player = document.getElementById('audioPlayer');
                         player.src = result.audio_url + "?t=" + new Date().getTime();
                         player.load();
-                        // Automatically play audio element once loaded
                         player.play().catch(err => console.log("Autoplay blocked by browser policy, user can press play.", err));
                     }
 
