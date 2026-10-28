@@ -18,7 +18,7 @@
 ## 💡 Overview
 In rural and remote parts of India, frontline health workers (ASHA/ANM workers) often face language barriers, heavy patient queues, and the challenge of rapid symptom triage. **AarogyaVoice** bridges this gap by offering a fully functional, sleek, dark-themed voice intake web application. 
 
-By capturing spoken patient descriptions in Indian languages and dialects, AarogyaVoice transcribes the audio, runs a dynamic clinical triage evaluation, categorizes urgency (Red/Yellow/Green), and provides immediate localized voice-synthesized medical guidance.
+By capturing spoken patient descriptions in Indian languages and dialects, AarogyaVoice transcribes the audio, runs a dynamic clinical triage evaluation, categorizes urgency (Red/Yellow/Green) and provides immediate localized voice-synthesized medical guidance.
 
 ---
 
