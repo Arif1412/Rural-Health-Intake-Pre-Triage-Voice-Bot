@@ -11,7 +11,7 @@ API_KEY = os.getenv("GNANIAPIKEY")
 BASE_URL = "https://api.vachana.ai"
 HEADERS_KEY = {"X-API-Key-ID": API_KEY, "Content-Type": "application/json"} if API_KEY else {}
 
-# Universal Voice Mapping for Timbre v2.5 TTS (Forced to 'Nalini' across all Indic languages for 100% compatibility)
+# Universal Voice Mapping for Timbre v2.5 TTS (Using 'Nalini' across all Indic languages for 100% compatibility)
 VOICE_MAP = {
     "hi-IN": "Nalini",   # Hindi
     "bn-IN": "Nalini",   # Bengali
@@ -21,55 +21,37 @@ VOICE_MAP = {
     "en-IN": "Nalini"    # English
 }
 
-# Comprehensive Localized Advice per Symptom & Dialect
-LOCALIZED_ADVICE = {
+# Fully Localized Fallbacks per Dialect (Safety Failsafe)
+LOCALIZED_DEFAULTS = {
     "hi-IN": {
-        "green": ("GREEN (Mild)", "आपके लक्षण सामान्य प्रतीत होते हैं। पर्याप्त विश्राम करें।", ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]),
-        "stomach": ("YELLOW (Moderate - Stomach)", "पेट की समस्या के लिए हल्का भोजन लें और ओआरएस का घोल पिएं।", ["Consume light foods like khichdi.", "Maintain strict hydration with ORS."]),
-        "eye": ("YELLOW (Moderate - Eye)", "आँख में दर्द या समस्या है। आँख न छुएं और नेत्र विशेषज्ञ से मिलें।", ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]),
-        "fever": ("YELLOW (Moderate - Fever)", "बुखार के लक्षण हैं। ओआरएस का घोल पिएं और तापमान मापें।", ["Monitor body temperature every 4-6 hours.", "Stay hydrated with ORS.", "Consult a physician within 24 hours."]),
-        "headache": ("YELLOW (Moderate - Headache)", "सिर दर्द की शिकायत है। शांत कमरे में आराम करें।", ["Apply a cold compress.", "Avoid bright screens.", "Stay hydrated."]),
-        "red": ("RED (Emergency)", "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं।", ["Call 108 emergency ambulance immediately.", "Keep patient calm and seated upright."])
+        "green_advice": "आपके लक्षण सामान्य प्रतीत होते हैं। पर्याप्त विश्राम करें।",
+        "yellow_advice": "पेट या सामान्य समस्या के लिए हल्का भोजन लें और ओआरएस का घोल पिएं।",
+        "red_advice": "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं।"
     },
     "bn-IN": {
-        "green": ("GREEN (Mild)", "আপনার লক্ষণগুলি সাধারণ বলে মনে হচ্ছে। পর্যাপ্ত বিশ্রাম নিন।", ["১-২ দিন পর্যাপ্ত বিশ্রাম নিন।", "পর্যাপ্ত জল পান করুন।"]),
-        "stomach": ("YELLOW (Moderate - Stomach)", "পেটের সমস্যার জন্য হালকা ও তাজা খাবার খান এবং ওআরএস পান করুন।", ["খিচুড়ির মতো হালকা খাবার খান।", "পর্যাপ্ত জল ও ওআরএস পান করুন।"]),
-        "eye": ("YELLOW (Moderate - Eye)", "আপনার চোখে সমস্যা বা ব্যথা রয়েছে। চোখ ঘষবেন না এবং চক্ষু বিশেষজ্ঞের পরামর্শ নিন।", ["পরিষ্কার জল দিয়ে চোখ ধুয়ে নিন।", "২৪ ঘণ্টার মধ্যে চক্ষু বিশেষজ্ঞের পরামর্শ নিন।"]),
-        "fever": ("YELLOW (Moderate - Fever)", "আপনার লক্ষণ অনুযায়ী জ্বর রয়েছে। পর্যাপ্ত জল বা ওআরএস পান করুন।", ["প্রতি ৪-৬ ঘণ্টা পর পর তাপমাত্রা মাপুন।", "২৪ ঘণ্টার মধ্যে চিকিৎসকের পরামর্শ নিন।"]),
-        "headache": ("YELLOW (Moderate - Headache)", "আপনার মাথা ব্যথা করছে। শান্ত ও অন্ধকার ঘরে বিশ্রাম নিন।", ["কপালে ঠান্ডা ভেজা কাপড় দিন।", "উজ্জ্বল স্ক্রিন এড়িয়ে চলুন।"]),
-        "red": ("RED (Emergency)", "সতর্কতা: মারাত্মক লক্ষণ দেখা গেছে। অবিলম্বে নিকটস্থ হাসপাতালে যান।", ["অবিলম্বে ১০৮ এ্যাম্বুলেন্সে কল করুন।", "রোগীকে শান্ত রাখুন।"])
+        "green_advice": "আপনার লক্ষণগুলি সাধারণ বলে মনে হচ্ছে। পর্যাপ্ত বিশ্রাম নিন।",
+        "yellow_advice": "পেটের সমস্যার জন্য হালকা ও তাজা খাবার খান এবং ওআরএস পান করুন।",
+        "red_advice": "সতর্কতা: মারাত্মক লক্ষণ দেখা গেছে। অবিলম্বে নিকটস্থ হাসপাতালে যান।"
     },
     "te-IN": {
-        "green": ("GREEN (Mild)", "మీ లక్షణాలు సాధారణంగా ఉన్నాయి. తగినంత విశ్రాంతి తీసుకోండి.", ["1-2 రోజులు తగినంత విశ్రాంతి తీసుకోండి.", "మంచి ఆహారం మరియు నీరు తీసుకోండి."]),
-        "stomach": ("YELLOW (Moderate - Stomach)", "కడుపు సమస్య కోసం తేలికపాటి ఆహారం తీసుకోండి మరియు ఓఆర్ఎస్ త్రాగండి.", ["ఖిచ్డీ వంటి తేలికపాటి ఆహారం తినండి.", "ORS మరియు నీరు త్రాగండి."]),
-        "eye": ("YELLOW (Moderate - Eye)", "మీ కంటిలో నొప్పి లేదా సమస్య ఉంది. కంటిని రుద్దకండి మరియు నేత్ర వైద్యుడిని సంప్రదించండి.", ["శుభ్రమైన నీటితో కళ్లను కడగండి.", "24 గంటలలోపు నేత్ర వైద్యుడిని సంప్రదించండి."]),
-        "fever": ("YELLOW (Moderate - Fever)", "మీకు జ్వరం ఉంది. తగినంత నీరు త్రాగి విశ్రాంతి తీసుకోండి.", ["ప్రతి 4-6 గంటలకు ఉష్ణోగ్రతను తనిఖీ చేయండి.", "24 గంటలలోపు వైద్యుడిని సంప్రదించండి."]),
-        "headache": ("YELLOW (Moderate - Headache)", "మీకు తలనొప్పి ఉంది. ప్రశాంతమైన గదిలో విశ్రాంతి తీసుకోండి.", ["నుదుటిపై చల్లని వస్త్రం ఉంచండి.", "ప్రకాశవంతమైన స్క్రీన్‌లను నివారించండి."]),
-        "red": ("RED (Emergency)", "హెచ్చరిక: తీవ్రమైన లక్షణాలు గుర్తించబడ్డాయి. వెంటనే సమీప ఆసుపత్రికి వెళ్లండి.", ["వెంటనే 108 అంబులెన్స్‌కు కాల్ చేయండి.", "రోగిని ప్రశాంతంగా ఉంచండి."])
+        "green_advice": "మీ లక్షణాలు సాధారణంగా ఉన్నాయి. తగినంత విశ్రాంతి తీసుకోండి.",
+        "yellow_advice": "కడుపు సమస్య కోసం తేలికపాటి ఆహారం తీసుకోండి మరియు ఓఆర్ఎస్ త్రాగండి.",
+        "red_advice": "హెచ్చరిక: తీవ్రమైన లక్షణాలు గుర్తించబడ్డాయి. వెంటనే సమీప ఆసుపత్రికి వెళ్లండి."
     },
     "mr-IN": {
-        "green": ("GREEN (Mild)", "तुमची लक्षणे सामान्य आहेत. पुरेशी विश्रांती घ्या.", ["1-2 दिवस विश्रांती घ्या.", "पाण्याचे प्रमाण योग्य ठेवा."]),
-        "stomach": ("YELLOW (Moderate - Stomach)", "पोटाच्या समस्येसाठी हलके अन्न खा आणि ओआरएसचे सेवन करा.", ["खिचडीसारखे हलके अन्न खा.", "भरपूर पाणी आणि ओआरएस प्या."]),
-        "eye": ("YELLOW (Moderate - Eye)", "तुमच्या डोळ्यात दुखत आहे. डोळा चोळू नका आणि नेत्रतज्ज्ञांना भेट द्या.", ["स्वच्छ पाण्याने डोळे हलके धुवा.", "24 तासांच्या आत नेत्रतज्ज्ञांचा सल्ला घ्या."]),
-        "fever": ("YELLOW (Moderate - Fever)", "तुम्हाला ताप आहे. भरपूर पाणी प्या आणि आराम करा.", ["दर 4-6 तासांनी शरीराचे तापमान तपासा.", "24 तासांच्या आत वैद्यांचा सल्ला घ्या."]),
-        "headache": ("YELLOW (Moderate - Headache)", "तुम्हाला डोकेदुखीचा त्रास आहे. शांत खोलीत विश्रांती घ्या.", ["कपाळावर थंड पट्टी ठेवा.", "उजेड किंवा स्क्रीनपासून दूर राहा."]),
-        "red": ("RED (Emergency)", "चेतावणी: गंभीर लक्षणे आढळली आहेत. त्वरित जवळच्या रुग्णालयात जा.", ["त्वरित १०८ रुग्णवाहिकेला कॉल करा.", "रुग्णाला शांत ठेवा."])
+        "green_advice": "तुमची लक्षणे सामान्य आहेत. पुरेशी विश्रांती घ्या.",
+        "yellow_advice": "पोटाच्या समस्येसाठी हलके अन्न खा आणि ओआरएसचे सेवन करा.",
+        "red_advice": "चेतावणी: गंभीर लक्षणे आढळली आहेत. त्वरित जवळच्या रुग्णालयात जा."
     },
     "ta-IN": {
-        "green": ("GREEN (Mild)", "உங்கள் அறிகுறிகள் சாதாரணமானவை. தகுந்த ஓய்வு எடுக்கவும்.", ["1-2 நாட்கள் தகுந்த ஓய்வு எடுக்கவும்.", "நீரேற்றமாக இருக்கவும்."]),
-        "stomach": ("YELLOW (Moderate - Stomach)", "வயிறு தொந்தரவுக்கு எளிதில் செரிமானமாகும் உணவை உட்கொள்ளவும் மற்றும் ஓஆர்எஸ் குடிக்கவும்.", ["கஞ்சி அல்லது எளிமையான உணவுகளை உண்ணவும்.", "ஓஆர்எஸ் அருந்தவும்."]),
-        "eye": ("YELLOW (Moderate - Eye)", "கண் வலி உள்ளது. கண்களை தேய்க்க வேண்டாம் மற்றும் கண் மருத்துவரை அணுகவும்.", ["சுத்தமான நீரால் கண்களை கழுவவும்.", "24 மணி நேரத்திற்குள் மருத்துவரை பார்க்கவும்."]),
-        "fever": ("YELLOW (Moderate - Fever)", "காய்ச்சல் அறிகுறி உள்ளது. ஓஆர்எஸ் குடிக்கவும் மற்றும் ஓய்வெடுக்கவும்.", ["உடல் வெப்பநிலையை கண்காணிக்கவும்.", "24 மணி நேரத்திற்குள் மருத்துவரை அணுகவும்."]),
-        "headache": ("YELLOW (Moderate - Headache)", "தலைவலி உள்ளது. அமைதியான அறையில் ஓய்வெடுக்கவும்.", ["நெல்லிக்காய் அளவு குளிர்ந்த துணியை வைக்கவும்.", "ஒளிரும் திரைகளை தவிர்க்கவும்."]),
-        "red": ("RED (Emergency)", "எச்சரிக்கை: தீவிர அறிகுறிகள் கண்டறியப்பட்டுள்ளன. உடனடியாக அருகில் உள்ள மருத்துவமனைക്ക്ச் செல்லவும்.", ["உடனடியாக 108 அவசர ஊர்தியை அழைக்கவும்.", "நோயாளி அமைதியாக இருக்கவும்."])
+        "green_advice": "உங்கள் அறிகுறிகள் சாதாரணமானவை. தகுந்த ஓய்வு எடுக்கவும்.",
+        "yellow_advice": "வயிறு தொந்தரவுக்கு எளிதில் செரிமானமாகும் உணவை உட்கொள்ளவும் மற்றும் ஓஆர்எஸ் குடிக்கவும்.",
+        "red_advice": "எச்சரிக்கை: தீவிர அறிகுறிகள் கண்டறியப்பட்டுள்ளன. உடனடியாக அருகில் உள்ள மருத்துவமனைக்குச் செல்லவும்."
     },
     "en-IN": {
-        "green": ("GREEN (Mild)", "Your symptoms appear mild. Get adequate rest and monitor your health.", ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]),
-        "stomach": ("YELLOW (Moderate - Stomach)", "For stomach discomfort, consume light foods and maintain strict hydration with ORS.", ["Consume light foods like khichdi.", "Avoid spicy or oily food."]),
-        "eye": ("YELLOW (Moderate - Eye)", "You have an eye issue or pain. Avoid touching your eye and consult an ophthalmologist promptly.", ["Wash eyes gently with clean water.", "Avoid rubbing eyes.", "Consult an ophthalmologist within 24 hours."]),
-        "fever": ("YELLOW (Moderate - Fever)", "According to your symptoms, you have a fever. Stay hydrated with ORS and rest.", ["Monitor body temperature every 4-6 hours.", "Consult a general physician within 24 hours."]),
-        "headache": ("YELLOW (Moderate - Headache)", "You are experiencing a headache. Rest in a quiet, dark room.", ["Apply a cold compress.", "Avoid bright screens."]),
-        "red": ("RED (Emergency)", "Warning: Severe symptoms detected. Please proceed to the nearest emergency hospital immediately.", ["Call 108 emergency ambulance immediately.", "Keep the patient calm and seated upright."])
+        "green_advice": "Your symptoms appear mild. Get adequate rest and monitor your health.",
+        "yellow_advice": "For discomfort, consume light foods and maintain strict hydration with ORS.",
+        "red_advice": "Warning: Severe symptoms detected. Please proceed to the nearest emergency hospital immediately."
     }
 }
 
@@ -93,67 +75,92 @@ def transcribe_audio_file(file_path, language_code="hi-IN"):
     return f"STT Error: {response.text}"
 
 def evaluate_symptoms_with_evon(transcript, language_code="hi-IN"):
-    lang_dict = LOCALIZED_ADVICE.get(language_code, LOCALIZED_ADVICE["hi-IN"])
+    """
+    Leverages Gnani Evon v3.3 LLM for sovereign vernacular clinical reasoning, 
+    parsing structured output tags for Triage Tier, Advice, and Action Steps.
+    """
+    defaults = LOCALIZED_DEFAULTS.get(language_code, LOCALIZED_DEFAULTS["hi-IN"])
+
     if not transcript or "Error" in transcript:
-        tier, advice, sols = lang_dict["green"]
-        return tier, advice, sols
+        return "UNKNOWN", defaults["green_advice"], ["Verify audio recording and retry intake."]
 
     url = f"{BASE_URL}/api/v1/llm/inference"
+    
     prompt = f"""
-    You are an expert rural health pre-triage assistant. 
+    You are an expert rural health pre-triage assistant powered by Gnani Evon v3.3. 
     Analyze the patient transcript: "{transcript}"
     Target Language Code: {language_code}
     
-    Classify urgency strictly into: "RED (Emergency)", "YELLOW (Moderate - Stomach)", "YELLOW (Moderate - Eye)", "YELLOW (Moderate - Fever)", "YELLOW (Moderate - Headache)", or "GREEN (Mild)".
-    Provide compassionate advice and 2 action steps in the native script of language {language_code}.
+    Provide your clinical evaluation strictly using these format tags:
+    [TIER]: Choose ONLY from "RED (Emergency)", "YELLOW (Moderate)", or "GREEN (Mild)"
+    [ADVICE]: Provide a compassionate clinical advice response written entirely in the native script of language {language_code}.
+    [ACTION_1]: First actionable step for the frontline health worker.
+    [ACTION_2]: Second actionable step for the frontline health worker.
     """
-    payload = {"model": "evon-v3.3", "prompt": prompt, "temperature": 0.1}
+
+    payload = {
+        "model": "evon-v3.3",
+        "prompt": prompt,
+        "temperature": 0.1
+    }
 
     try:
         response = requests.post(url, headers=HEADERS_KEY, json=payload)
         if response.status_code == 200:
             res_data = response.json()
             text_output = res_data.get("output") or res_data.get("text") or res_data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            
             if text_output:
-                t_upper = text_output.upper()
-                if "RED" in t_upper:
-                    return lang_dict["red"][0], text_output, ["Call 108 emergency ambulance immediately.", "Keep patient calm and seated upright."]
-                elif "EYE" in t_upper or "आँख" in text_output or "डोळ" in t_output or "கண்" in t_output or "కంటి" in t_output:
-                    return lang_dict["eye"][0], text_output, lang_dict["eye"][2]
-                elif "FEVER" in t_upper or "बुखार" in t_output or "ज্বর" in t_output or "జ్వరం" in t_output or "ताप" in t_output:
-                    return lang_dict["fever"][0], text_output, lang_dict["fever"][2]
-                elif "HEADACHE" in t_upper or "सिर दर्द" in t_output or "মাথা" in t_output or "తలనొప్పి" in t_output or "डोकेदुखी" in t_output:
-                    return lang_dict["headache"][0], text_output, lang_dict["headache"][2]
-                elif "STOMACH" in t_upper or "पेट" in t_output or "পেট" in t_output or "வயிறு" in t_output or "కడుపు" in t_output:
-                    return lang_dict["stomach"][0], text_output, lang_dict["stomach"][2]
-                elif "GREEN" in t_upper:
-                    return lang_dict["green"][0], text_output, lang_dict["green"][2]
+                # Parse Evon v3.3 tags
+                tier = "YELLOW (Moderate)"
+                advice = text_output
+                solutions = ["Monitor vitals closely.", "Follow regional clinical protocol."]
+                
+                if "[TIER]:" in text_output:
+                    lines = text_output.split("\n")
+                    extracted_advice = []
+                    extracted_actions = []
+                    
+                    for line in lines:
+                        if "[TIER]:" in line:
+                            t_val = line.split("[TIER]:")[1].strip().upper()
+                            if "RED" in t_val: tier = "RED (Emergency)"
+                            elif "GREEN" in t_val: tier = "GREEN (Mild)"
+                            elif "YELLOW" in t_val: tier = "YELLOW (Moderate)"
+                        elif "[ADVICE]:" in line:
+                            extracted_advice.append(line.split("[ADVICE]:")[1].strip())
+                        elif "[ACTION_1]:" in line:
+                            extracted_actions.append(line.split("[ACTION_1]:")[1].strip())
+                        elif "[ACTION_2]:" in line:
+                            extracted_actions.append(line.split("[ACTION_2]:")[1].strip())
+                    
+                    if extracted_advice:
+                        advice = " ".join(extracted_advice)
+                    if extracted_actions:
+                        solutions = extracted_actions
+                else:
+                    # Fallback text parsing if tags are unstructured
+                    t_upper = text_output.upper()
+                    if "RED" in t_upper: tier = "RED (Emergency)"
+                    elif "GREEN" in t_upper: tier = "GREEN (Mild)"
+
+                return tier, advice, solutions
     except Exception:
         pass
 
-    # Expanded Keyword-Based Fallback Engine for accurate categorization
+    # Keyword Fallback Failsafe
     t_lower = transcript.lower()
-    
-    red_keywords = ["chest pain", "breathlessness", "unconscious", "saans", "छाती", "বুক", "மார்பக", "ఛాతీ", "छातीत", "सास", "अज्ञान"]
-    eye_keywords = ["eye", "आँख", "लेफ्ट आई", "right eye", "left eye", "চোখ", "கண்", "కన్ను", "डोळा"]
-    fever_keywords = ["bukhar", "fever", "बुखार", "ज্বর", "காய்ச்சல்", "జ్వరం", "ताप"]
-    headache_keywords = ["sir dard", "headache", "sar dard", "सर दर्द", "सिर में दर्द", "মাথা", "தலைவலி", "తలనొప్పి", "डोकेदुखी"]
-    stomach_keywords = ["pet", "stomach", "vomit", "ulti", "पेट", "दस्त", "পেট", "வயிறு", "కడుపు", "पोट"]
+    red_keywords = ["chest pain", "breathlessness", "unconscious", "saans", "छाती", "বুক", "மார்பக", "ఛాతీ", "छातीत", "सास"]
+    stomach_keywords = ["pet", "stomach", "vomit", "ulti", "पेट", "পেট", "வயிறு", "కడుపు", "पोट"]
 
     if any(w in t_lower for w in red_keywords):
-        return lang_dict["red"]
-    elif any(w in t_lower for w in eye_keywords):
-        return lang_dict["eye"]
-    elif any(w in t_lower for w in fever_keywords):
-        return lang_dict["fever"]
-    elif any(w in t_lower for w in headache_keywords):
-        return lang_dict["headache"]
+        return "RED (Emergency)", defaults["red_advice"], ["Call 108 emergency ambulance immediately.", "Keep patient calm and seated upright."]
     elif any(w in t_lower for w in stomach_keywords):
-        return lang_dict["stomach"]
+        return "YELLOW (Moderate - Stomach)", defaults["yellow_advice"], ["Consume light foods like khichdi.", "Maintain strict hydration with ORS."]
     
-    return lang_dict["green"]
+    return "GREEN (Mild)", defaults["green_advice"], ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
 
-# Robust Gnani AI Timbre v2.5 TTS Integration (Using Nalini)
+# Robust Gnani AI Timbre v2.5 TTS Integration
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
     if not API_KEY:
         return None
@@ -199,7 +206,7 @@ async def analyze_audio(file: UploadFile = File(...), language: str = Form("hi-I
     transcript = transcribe_audio_file(temp_filename, language_code=language)
     triage_level, advice, solutions = evaluate_symptoms_with_evon(transcript, language_code=language)
     
-    # Generate audio using Gnani AI Timbre v2.5 with Nalini voice mapping matching the language advice
+    # Generate audio using Gnani AI Timbre v2.5 matching the correct language advice
     audio_output_path = synthesize_voice(advice, language_code=language)
     
     if os.path.exists(temp_filename):
@@ -269,13 +276,13 @@ async def serve_frontend():
                             Frontline Healthcare Intake & Pre-Triage Engine
                         </h1>
                         <p class="text-neutral-400 text-sm mt-4 leading-relaxed">
-                            AarogyaVoice empowers community health workers across India to capture patient speech, evaluate symptoms with Gnani Evon LLM, and return instant spoken guidance via Timbre v2.5 TTS.
+                            AarogyaVoice empowers community health workers across India to capture patient speech, evaluate symptoms with Gnani Evon v3.3 LLM, and return instant spoken guidance via Timbre v2.5 TTS.
                         </p>
                     </div>
 
                     <div class="mt-8 pt-6 border-t border-neutral-800/80 flex flex-wrap gap-2">
                         <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Prisma v2.5 STT</span>
-                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Gnani Evon LLM</span>
+                        <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Gnani Evon v3.3 LLM</span>
                         <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">Timbre v2.5 TTS</span>
                         <span class="bg-neutral-900 text-neutral-300 border border-neutral-800 text-xs px-3 py-1 rounded-md font-mono-code">FastAPI</span>
                     </div>
@@ -352,7 +359,7 @@ async def serve_frontend():
                 <!-- Loading Spinner -->
                 <div id="loader" class="hidden text-center my-8">
                     <div class="inline-block animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
-                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Running Prisma STT, Gnani Evon LLM reasoning & Timbre TTS...</p>
+                    <p class="text-xs font-mono-code text-neutral-400 mt-3">Running Prisma STT, Gnani Evon v3.3 reasoning & Timbre TTS...</p>
                 </div>
 
                 <!-- Results Output Grid -->
@@ -400,7 +407,7 @@ async def serve_frontend():
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
                         <span class="text-neutral-500 text-[10px]">02 / REASONING ENGINE</span>
-                        <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Evon LLM</h3>
+                        <h3 class="text-sm font-bold text-white mt-1 mb-2">Gnani Evon v3.3</h3>
                         <p class="text-neutral-400 text-[11px] leading-relaxed">Evaluates symptoms dynamically using sovereign Indian foundational AI to map severity and formulate care instructions.</p>
                     </div>
                     <div class="bg-neutral-950 border border-neutral-800 hover:border-neutral-500 hover:-translate-y-1 transition-all duration-300 p-5 rounded-xl shadow-lg">
