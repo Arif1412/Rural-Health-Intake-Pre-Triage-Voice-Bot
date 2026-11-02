@@ -21,6 +21,40 @@ VOICE_MAP = {
     "en-IN": "Nalini"    # English
 }
 
+# Fully Localized Fallbacks per Dialect
+LOCALIZED_DEFAULTS = {
+    "hi-IN": {
+        "green_advice": "आपके लक्षण सामान्य प्रतीत होते हैं। पर्याप्त विश्राम करें।",
+        "yellow_advice": "पेट या सामान्य समस्या के लिए हल्का भोजन लें और ओआरएस का घोल पिएं।",
+        "red_advice": "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं।"
+    },
+    "bn-IN": {
+        "green_advice": "আপনার লক্ষণগুলি সাধারণ বলে মনে হচ্ছে। পর্যাপ্ত বিশ্রাম নিন।",
+        "yellow_advice": "পেটের সমস্যার জন্য হালকা ও তাজা খাবার খান এবং ওআরএস পান করুন।",
+        "red_advice": "সতর্কতা: মারাত্মক লক্ষণ দেখা গেছে। অবিলম্বে নিকটস্থ হাসপাতালে যান।"
+    },
+    "te-IN": {
+        "green_advice": "మీ లక్షణాలు సాధారణంగా ఉన్నాయి. తగినంత విశ్రాంతి తీసుకోండి.",
+        "yellow_advice": "కడుపు సమస్య కోసం తేలికపాటి ఆహారం తీసుకోండి మరియు ఓఆర్ఎస్ త్రాగండి.",
+        "red_advice": "హెచ్చరిక: తీవ్రమైన లక్షణాలు గుర్తించబడ్డాయి. వెంటనే సమీప ఆసుపత్రికి వెళ్లండి."
+    },
+    "mr-IN": {
+        "green_advice": "तुमची लक्षणे सामान्य आहेत. पुरेशी विश्रांती घ्या.",
+        "yellow_advice": "पोटाच्या समस्येसाठी हलके अन्न खा आणि ओआरएसचे सेवन करा.",
+        "red_advice": "चेतावणी: गंभीर लक्षणे आढळली आहेत. त्वरित जवळच्या रुग्णालयात जा."
+    },
+    "ta-IN": {
+        "green_advice": "உங்கள் அறிகுறிகள் সাধারণமானவை. தகுந்த ஓய்வு எடுக்கவும்.",
+        "yellow_advice": "வயிறு தொந்தரவுக்கு எளிதில் செரிமானமாகும் உணவை உட்கொள்ளவும் மற்றும் ஓஆர்எஸ் குடிக்கவும்.",
+        "red_advice": "எச்சரிக்கை: தீவிர அறிகுறிகள் கண்டறியப்பட்டுள்ளன. உடனடியாக அருகில் உள்ள மருத்துவமனைக்குச் செல்லவும்."
+    },
+    "en-IN": {
+        "green_advice": "Your symptoms appear mild. Get adequate rest and monitor your health.",
+        "yellow_advice": "For discomfort, consume light foods and maintain strict hydration with ORS.",
+        "red_advice": "Warning: Severe symptoms detected. Please proceed to the nearest emergency hospital immediately."
+    }
+}
+
 def transcribe_audio_file(file_path, language_code="hi-IN"):
     if not API_KEY:
         return "API Key not configured."
@@ -43,25 +77,24 @@ def transcribe_audio_file(file_path, language_code="hi-IN"):
 def evaluate_symptoms_with_evon(transcript, language_code="hi-IN"):
     """
     Leverages Gnani Evon LLM for intelligent sovereign clinical reasoning, 
-    with a seamless fallback to keyword-based triage rules.
+    with localized fallback dictionaries tailored to the selected dialect.
     """
+    defaults = LOCALIZED_DEFAULTS.get(language_code, LOCALIZED_DEFAULTS["hi-IN"])
+
     if not transcript or "Error" in transcript:
-        return "UNKNOWN", "विवरण नहीं मिला / Details not found.", ["Verify audio recording and retry intake."]
+        return "UNKNOWN", defaults["green_advice"], ["Verify audio recording and retry intake."]
 
     url = f"{BASE_URL}/api/v1/llm/inference"
     
     prompt = f"""
     You are an expert rural health pre-triage assistant. 
-    Analyze the following patient speech transcript in language code {language_code}:
-    "{transcript}"
+    Analyze the following patient transcript: "{transcript}"
+    Target Language Code: {language_code}
     
-    Task:
-    1. Classify the urgency tier strictly into one of: 
-       - "RED (Emergency)" (e.g., chest pain, breathing difficulties, unconsciousness)
-       - "YELLOW (Moderate)" (e.g., fever, localized pain, stomach upset, eye issue)
-       - "GREEN (Mild)" (general minor symptoms)
-    2. Provide short, compassionate verbal advice written natively in the target script/language corresponding to {language_code}.
-    3. List 2 clinical action steps for the frontline ASHA/ANM health worker.
+    Instructions:
+    1. Classify urgency strictly as: "RED (Emergency)", "YELLOW (Moderate)", or "GREEN (Mild)".
+    2. Provide a compassionate clinical advice response written entirely in the native script of language {language_code}.
+    3. Provide 2 action steps for the frontline health worker.
     """
 
     payload = {
@@ -85,17 +118,17 @@ def evaluate_symptoms_with_evon(transcript, language_code="hi-IN"):
     except Exception:
         pass
 
-    # Fallback to robust multilingual keyword logic if LLM gateway times out
+    # Intelligent Localized Fallback based on Dialect & Keywords
     t_lower = transcript.lower()
-    red_keywords = ["chest pain", "breathlessness", "unconscious", "saans", "छाती में दर्द", "सांस फूलना", "বুক ব্যথা", "শ্বাসকষ্ট", "অজ্ঞান", "மார்பக வலி", "மூச்சு திணறல்", "ఛాతీ నొప్పి", "छातीत दुखणे"]
-    stomach_keywords = ["pet", "stomach", "vomit", "ulti", "पेट", "পেট", "পেটে ব্যথা", "வயிறு வலி", "కడుపు", "పोटदुखी"]
+    red_keywords = ["chest pain", "breathlessness", "unconscious", "saans", "छाती", "বুক", "மார்பக", "ఛాతీ", "छातीत", "सास"]
+    stomach_keywords = ["pet", "stomach", "vomit", "ulti", "पेट", "পেট", "வயிறு", "కడుపు", "पोट"]
 
     if any(w in t_lower for w in red_keywords):
-        return "RED (Emergency)", "चेतावनी: गंभीर लक्षण पाए गए हैं। तुरंत नजदीकी अस्पताल जाएं.", ["Call 108 emergency ambulance immediately.", "Keep patient calm and seated upright."]
+        return "RED (Emergency)", defaults["red_advice"], ["Call 108 emergency ambulance immediately.", "Keep patient calm and seated upright."]
     elif any(w in t_lower for w in stomach_keywords):
-        return "YELLOW (Moderate - Stomach)", "पेट की समस्या के लिए हल्का भोजन लें और ओआरएस का घोल पिएं.", ["Consume light foods like khichdi.", "Maintain strict hydration with ORS."]
+        return "YELLOW (Moderate - Stomach)", defaults["yellow_advice"], ["Consume light foods like khichdi.", "Maintain strict hydration with ORS."]
     
-    return "GREEN (Mild)", "आपके लक्षण सामान्य प्रतीत होते हैं। पर्याप्त विश्राम करें.", ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
+    return "GREEN (Mild)", defaults["green_advice"], ["Get adequate rest for 1-2 days.", "Maintain proper hydration."]
 
 # Robust Gnani AI Timbre v2.5 TTS Integration
 def synthesize_voice(text, language_code="hi-IN", output_filename="response.wav"):
@@ -143,7 +176,7 @@ async def analyze_audio(file: UploadFile = File(...), language: str = Form("hi-I
     transcript = transcribe_audio_file(temp_filename, language_code=language)
     triage_level, advice, solutions = evaluate_symptoms_with_evon(transcript, language_code=language)
     
-    # Generate audio using Gnani AI Timbre v2.5
+    # Generate audio using Gnani AI Timbre v2.5 matching the correct language advice
     audio_output_path = synthesize_voice(advice, language_code=language)
     
     if os.path.exists(temp_filename):
